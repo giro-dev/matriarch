@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.domain;
+package dev.agiro.matriarch.domain.model;
 
 import java.math.BigDecimal;
 import java.sql.Array;
@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public enum FieldSupplierType {
@@ -27,6 +28,7 @@ public enum FieldSupplierType {
     ARRAY(Array.class),
     LIST(List.class),
     SET(Set.class),
+    MAP(Map.class),
     ENUM(),
     UNKNOWN();
 

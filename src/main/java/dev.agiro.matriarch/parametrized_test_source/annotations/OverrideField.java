@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.core.annotated_test.annotations;
+package dev.agiro.matriarch.parametrized_test_source.annotations;
 
 import java.lang.annotation.*;
 

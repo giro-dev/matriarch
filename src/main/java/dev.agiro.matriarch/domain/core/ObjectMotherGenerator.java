@@ -1,11 +1,11 @@
-package dev.agiro.matriarch.core;
+package dev.agiro.matriarch.domain.core;
 
 
-import dev.agiro.matriarch.core.field_solver.FieldValueSupplier;
-import dev.agiro.matriarch.domain.ClassProperties;
-import dev.agiro.matriarch.domain.FieldProperties;
-import dev.agiro.matriarch.domain.FieldSupplierType;
-import dev.agiro.matriarch.domain.Overrider;
+import dev.agiro.matriarch.domain.core.field_solver.FieldValueSupplier;
+import dev.agiro.matriarch.domain.model.ClassProperties;
+import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.FieldSupplierType;
+import dev.agiro.matriarch.domain.model.Overrider;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.reflect.*;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static dev.agiro.matriarch.domain.FieldSupplierType.UNKNOWN;
+import static dev.agiro.matriarch.domain.model.FieldSupplierType.UNKNOWN;
 
 
 public class ObjectMotherGenerator {
@@ -28,11 +28,11 @@ public class ObjectMotherGenerator {
                                                                                  this::createObject);
 
     public <T> T createObject(Class<T> clazz) {
-        return (T) createObject(new ClassProperties(clazz, Map.of(), ""));
+        return createObject(new ClassProperties<>(clazz, Map.of(), ""));
     }
 
     public <T> T createObject(Class<T> clazz, Map<String, Overrider> overrideValues) {
-        return (T) createObject(new ClassProperties(clazz, overrideValues, ""));
+        return createObject(new ClassProperties<>(clazz, overrideValues, ""));
     }
 
     public <T> T createObject(ClassProperties<T> classPropperties) {
@@ -158,7 +158,7 @@ public class ObjectMotherGenerator {
 
         if (UNKNOWN.equals(supplierType)) {
             //try creating the field as an object (Recursive method)
-            return createObject(new ClassProperties(fieldProperties.fieldType(),
+            return createObject(new ClassProperties<>(fieldProperties.fieldType(),
                                                     fieldProperties.overrideValues(),
                                                     fieldProperties.overrideCoordinate()));
         }

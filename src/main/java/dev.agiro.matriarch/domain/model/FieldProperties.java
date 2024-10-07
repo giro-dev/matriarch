@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.domain;
+package dev.agiro.matriarch.domain.model;
 
 import java.lang.reflect.Type;
 import java.util.Map;

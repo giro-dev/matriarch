@@ -1,6 +1,6 @@
 package dev.agiro.matriarch;
 
-import dev.agiro.matriarch.core.Mother;
+import dev.agiro.matriarch.domain.core.Mother;
 import dev.agiro.matriarch.object_samples.AllArgsConstructorBasicObjectAllTypes;
 import dev.agiro.matriarch.object_samples.ObjectWithKnlownPatternCasted;
 import dev.agiro.matriarch.object_samples.RecordWithKnownPatterns;

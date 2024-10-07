@@ -1,8 +1,8 @@
 package dev.agiro.matriarch.infrastructure;
 
 
-import dev.agiro.matriarch.domain.KnownPatterns;
-import dev.agiro.matriarch.domain.Pattern;
+import dev.agiro.matriarch.domain.model.KnownPatterns;
+import dev.agiro.matriarch.domain.model.Pattern;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;

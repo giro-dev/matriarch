@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class AllArgsConstructorBasicObjectAllTypes {
@@ -24,6 +25,7 @@ public class AllArgsConstructorBasicObjectAllTypes {
     private NoArgsConstructorBasicObject       nestedObject;
     private List<String>                       list;
     private List<NoArgsConstructorBasicObject> objectList;
+    private Map<String, NoArgsConstructorBasicObject> map;
 
 
     public AllArgsConstructorBasicObjectAllTypes(String string,
@@ -40,7 +42,8 @@ public class AllArgsConstructorBasicObjectAllTypes {
                                                  java.time.LocalDate date,
                                                  NoArgsConstructorBasicObject nestedObject,
                                                  List<String> list,
-                                                 List<NoArgsConstructorBasicObject> objectList) {
+                                                 List<NoArgsConstructorBasicObject> objectList,
+                                                 Map<String, NoArgsConstructorBasicObject> map) {
         this.string       = string;
         this.integer      = integer;
         this.bool         = bool;
@@ -56,6 +59,7 @@ public class AllArgsConstructorBasicObjectAllTypes {
         this.nestedObject = nestedObject;
         this.list         = list;
         this.objectList   = objectList;
+        this.map          = map;
     }
 
     public String getString() {
@@ -176,5 +180,13 @@ public class AllArgsConstructorBasicObjectAllTypes {
 
     public void setObjectList(List<NoArgsConstructorBasicObject> objectList) {
         this.objectList = objectList;
+    }
+
+    public Map<String, NoArgsConstructorBasicObject> getMap() {
+        return map;
+    }
+
+    public void setMap(Map<String, NoArgsConstructorBasicObject> map) {
+        this.map = map;
     }
 }

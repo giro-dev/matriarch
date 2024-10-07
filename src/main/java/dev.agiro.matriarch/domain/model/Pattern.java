@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.domain;
+package dev.agiro.matriarch.domain.model;
 
 
 public record Pattern(String coordinate, String value, String type) {

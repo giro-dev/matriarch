@@ -1,6 +1,6 @@
-package dev.agiro.matriarch.core;
+package dev.agiro.matriarch.domain.core;
 
-import dev.agiro.matriarch.domain.Overrider;
+import dev.agiro.matriarch.domain.model.Overrider;
 
 import java.util.HashMap;
 import java.util.Map;

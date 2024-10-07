@@ -1,11 +1,13 @@
-package dev.agiro.matriarch.core.field_solver;
+package dev.agiro.matriarch.domain.core.field_solver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import dev.agiro.matriarch.domain.*;
+import dev.agiro.matriarch.domain.model.*;
 import dev.agiro.matriarch.infrastructure.OverridesKnownPatternsStore;
 import net.datafaker.Faker;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -18,7 +20,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static dev.agiro.matriarch.domain.FieldSupplierType.*;
+import static dev.agiro.matriarch.domain.model.FieldSupplierType.*;
 
 public class FieldValueSupplier extends EnumMap<FieldSupplierType, Function<FieldValueSupplier.SupplierInput, Object>> {
 
@@ -28,7 +30,7 @@ public class FieldValueSupplier extends EnumMap<FieldSupplierType, Function<Fiel
             .registerModule(new JavaTimeModule());
 
     private final Function<FieldProperties, Object> randomValue;
-    private final Function<ClassProperties, Object> randomObject;
+    private final Function<ClassProperties<?>, Object> randomObject;
     private final List<Supplier<String>>            stringGenerators;
     private final Map<String, Supplier<String>>     knownPatterns;
 
@@ -38,7 +40,7 @@ public class FieldValueSupplier extends EnumMap<FieldSupplierType, Function<Fiel
     private final Faker faker = new Faker();
 
     public FieldValueSupplier(Function<FieldProperties, Object> randomValue,
-                              Function<ClassProperties, Object> randomObject) {
+                              Function<ClassProperties<?>, Object> randomObject) {
         super(FieldSupplierType.class);
         this.randomValue      = randomValue;
         this.randomObject     = randomObject;
@@ -66,6 +68,7 @@ public class FieldValueSupplier extends EnumMap<FieldSupplierType, Function<Fiel
         put(ARRAY, this::makeArray);
         put(LIST, this::makeList);
         put(SET, this::makeSet);
+        put(MAP, this::makeMap);
         put(ENUM, input -> input.fieldProps().fieldType()
                     .getEnumConstants()[random.nextInt(input.fieldProps().fieldType().getEnumConstants().length)]);
     }
@@ -121,7 +124,7 @@ public class FieldValueSupplier extends EnumMap<FieldSupplierType, Function<Fiel
     }
 
     private Object makeList(SupplierInput input) {
-        final Class<?> aClass = extractClassFromParametrizedType(input.fieldProps().parametrizedType());
+        final var aClass = extractClassFromParametrizedType(input.fieldProps().parametrizedType()).get(0);
 
         final Set<Integer> collectionElements = getCollectionElements(input.fieldProps().overrideValues(),
                                                                       input.fieldProps().overrideCoordinate());
@@ -151,7 +154,7 @@ public class FieldValueSupplier extends EnumMap<FieldSupplierType, Function<Fiel
 
 
     private Object makeSet(SupplierInput input) {
-        final Class<?> aClass = extractClassFromParametrizedType(input.fieldProps().parametrizedType());
+        final var aClass = extractClassFromParametrizedType(input.fieldProps().parametrizedType()).get(0);
 
         final Set<Integer>      collectionElements = getCollectionElements(input.fieldProps().overrideValues(),
                                                                            input.fieldProps().overrideCoordinate());
@@ -170,32 +173,44 @@ public class FieldValueSupplier extends EnumMap<FieldSupplierType, Function<Fiel
     }
 
     private Object makeMap(SupplierInput input) {
-        final Class<?> aClass = extractClassFromParametrizedType(input.fieldProps().parametrizedType());
+        final var aClass = extractClassFromParametrizedType(input.fieldProps().parametrizedType());
 
         final Set<Integer>      collectionElements = getCollectionElements(input.fieldProps().overrideValues(),
                                                                            input.fieldProps().overrideCoordinate());
         final Optional<Integer> size               = collectionElements.stream().max(Integer::compareTo);
         return size.map(integer -> IntStream.range(0, integer + 1)
-                        .mapToObj(i -> this.randomObject.apply(new ClassProperties<>(aClass,
-                                                                                   input.fieldProps().overrideValues(),
-                                                                                   (input.fieldProps().overrideCoordinate() + ".[" + i + "]"))))
-                        .collect(Collectors.toSet()))
+                        .mapToObj(i -> Pair.of(this.randomObject.apply(new ClassProperties<>(aClass.get(0),
+                                                                                               input.fieldProps().overrideValues(),
+                                                                                               (input.fieldProps().overrideCoordinate() + ".[" + i + "]"))),
+                                                   this.randomObject.apply(new ClassProperties<>(aClass.get(1),
+                                                                                                 input.fieldProps().overrideValues(),
+                                                                                                 (input.fieldProps().overrideCoordinate() + ".[" + i + "]")))))
+                        .collect(Collectors.toMap(Pair::getLeft, Pair::getRight)))
                 .orElseGet(() -> aClass == null ?
-                        Collections.emptySet() :
-                        Set.of(this.randomValue.apply(new FieldProperties(aClass,
+                        Collections.emptyMap() :
+                        Map.of(this.randomValue.apply(new FieldProperties(aClass.get(0),
+                                                                          input.fieldProps().parametrizedType(),
+                                                                          input.fieldProps().overrideValues(),
+                                                                          input.fieldProps().overrideCoordinate())),
+                               this.randomValue.apply(new FieldProperties(aClass.get(1),
                                                                           input.fieldProps().parametrizedType(),
                                                                           input.fieldProps().overrideValues(),
                                                                           input.fieldProps().overrideCoordinate()))));
     }
 
-    private static Class<?> extractClassFromParametrizedType(Type parametrizedType) {
+    private static List<Class<?>> extractClassFromParametrizedType(Type parametrizedType) {
         if (parametrizedType instanceof final ParameterizedType type) {
-            Type elementType = type.getActualTypeArguments()[0];
-            try {
-                return Class.forName(elementType.getTypeName());
-            } catch (ClassNotFoundException e) {
-                return null;
-            }
+
+                return Arrays.stream(type.getActualTypeArguments())
+                        .map(typeArg -> {
+                            try {
+                                return Class.forName(typeArg.getTypeName());
+                            } catch (ClassNotFoundException e) {
+                                return ObjectUtils.Null.class;
+                            }
+                        })
+                        .filter(clazz -> !ObjectUtils.Null.class.equals(clazz))
+                        .toList();
         }
         return null;
     }

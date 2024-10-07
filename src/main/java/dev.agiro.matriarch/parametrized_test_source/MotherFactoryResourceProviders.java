@@ -1,13 +1,13 @@
-package dev.agiro.matriarch.core.annotated_test;
+package dev.agiro.matriarch.parametrized_test_source;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.agiro.matriarch.core.ObjectMotherGenerator;
-import dev.agiro.matriarch.core.annotated_test.annotations.MotherFactoryResource;
-import dev.agiro.matriarch.core.annotated_test.annotations.OverrideField;
-import dev.agiro.matriarch.domain.ClassProperties;
-import dev.agiro.matriarch.domain.Overrider;
+import dev.agiro.matriarch.domain.core.ObjectMotherGenerator;
+import dev.agiro.matriarch.domain.model.ClassProperties;
+import dev.agiro.matriarch.parametrized_test_source.annotations.MotherFactoryResource;
+import dev.agiro.matriarch.parametrized_test_source.annotations.OverrideField;
+import dev.agiro.matriarch.domain.model.Overrider;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.params.provider.Arguments;
@@ -36,9 +36,9 @@ public class MotherFactoryResourceProviders implements ArgumentsProvider, Annota
     public void accept(MotherFactoryResource motherFactoryResource) {
         this.args = Stream.of(motherFactoryResource.args())
                 .map(argsResource -> generator.createObject(new ClassProperties<>(argsResource.targetClass(),
-                                                                                computeOverrideDefinitions(argsResource.overrides(),
+                                                                                  computeOverrideDefinitions(argsResource.overrides(),
                                                                              argsResource.jsonOverrides()),
-                                                                                "")))
+                                                                                  "")))
                 .toArray();
     }
 
