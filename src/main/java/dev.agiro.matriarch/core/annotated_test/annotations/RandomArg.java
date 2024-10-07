@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.model.annotations;
+package dev.agiro.matriarch.core.annotated_test.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RandomArg {
-    Class<?> targetClass();
+    Class<? extends Object> targetClass();
     OverrideField[] overrides() default {};
     String jsonOverrides() default "";
 }

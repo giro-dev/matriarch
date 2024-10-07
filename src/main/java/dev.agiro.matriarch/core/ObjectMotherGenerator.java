@@ -1,15 +1,14 @@
-package dev.agiro.matriarch.application;
+package dev.agiro.matriarch.core;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.agiro.matriarch.application.field_solver.FieldValueSupplier;
-import dev.agiro.matriarch.model.ClassProperties;
-import dev.agiro.matriarch.model.FieldProperties;
-import dev.agiro.matriarch.model.Overrider;
-import net.datafaker.Faker;
+
+import dev.agiro.matriarch.core.field_solver.FieldValueSupplier;
+import dev.agiro.matriarch.domain.ClassProperties;
+import dev.agiro.matriarch.domain.FieldProperties;
+import dev.agiro.matriarch.domain.FieldSupplierType;
+import dev.agiro.matriarch.domain.Overrider;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.reflect.*;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,36 +16,36 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static dev.agiro.matriarch.domain.FieldSupplierType.UNKNOWN;
+
+
 public class ObjectMotherGenerator {
-    private static final Logger log = Logger.getLogger(ObjectMotherGenerator.class.getName());
+    Logger log = Logger.getLogger(ObjectMotherGenerator.class.getName());
 
     enum InstanceType {NO_ARGS_CONSTRUCTOR, STATIC_METHOD, CONSTRUCTOR}
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    private final Faker              faker              = new Faker();
     private final FieldValueSupplier fieldValueSupplier = new FieldValueSupplier(this::generateRandomValue,
-                                                                                 this::create);
+                                                                                 this::createObject);
 
-    public <T> T create(Class<T> clazz) {
-        return (T) create(new ClassProperties(clazz, Map.of(), ""));
+    public <T> T createObject(Class<T> clazz) {
+        return (T) createObject(new ClassProperties(clazz, Map.of(), ""));
     }
 
-    public <T> T create(Class<T> clazz, Map<String, Overrider> overrideValues) {
-        return (T) create(new ClassProperties(clazz, overrideValues, ""));
+    public <T> T createObject(Class<T> clazz, Map<String, Overrider> overrideValues) {
+        return (T) createObject(new ClassProperties(clazz, overrideValues, ""));
     }
 
-    public <T> T create(ClassProperties<T> classPropperties) {
+    public <T> T createObject(ClassProperties<T> classPropperties) {
         final var instance = getInstance(classPropperties.fieldType(),
                                          classPropperties.overrideValues(),
                                          classPropperties.overrideCoordinate());
-            resolveFields(instance.getLeft().getClass())
-                    .forEach(field -> setValueToField(instance.getLeft(),
-                                                      field,
-                                                      classPropperties.overrideValues(),
-                                                      classPropperties.overrideCoordinate()));
+        resolveFields(instance.getLeft().getClass())
+                .forEach(field -> setValueToField(instance.getLeft(),
+                                                  field,
+                                                  classPropperties.overrideValues(),
+                                                  classPropperties.overrideCoordinate()));
 
-        return (T) instance.getLeft();
+        return instance.getLeft();
 
     }
 
@@ -83,26 +82,27 @@ public class ObjectMotherGenerator {
                 field.setAccessible(isAccessible);
             }
         } catch (Exception e) {
-            log.severe(MessageFormat.format("Error setting field {0} in class {1} with value {2}",
-                      field.getName(),
-                      object.getClass().getName(),
-                      e.getMessage()));
+            log.severe("ObjectMother not able to set field %s in class %s with value %s".formatted(field.getName(),
+                                                                                                   object.getClass().getName(),
+                                                                                                   e.getMessage()));
         }
     }
 
     private <T> Pair<T, InstanceType> getInstance(Class<T> clazz,
                                                   Map<String, Overrider> overrideValues,
                                                   String overrideCoordinate) {
-        final Map<List<Parameter>, ? extends Constructor<?>> constructors = Arrays.stream(clazz.getConstructors()).collect(
-                Collectors.toMap(
+        final Map<List<Parameter>, ? extends Constructor<?>> constructors = Arrays.stream(clazz.getConstructors())
+                .collect(Collectors.toMap(
                         c -> List.of(c.getParameters()),
                         c -> c));
         Constructor<?> constructor = null;
         try {
             if (constructors.isEmpty())
-                return Pair.of((T) tryStaticMethod(clazz, overrideValues), InstanceType.STATIC_METHOD);
+                return Pair.of(tryStaticMethod(clazz, overrideValues, overrideCoordinate), InstanceType.STATIC_METHOD);
             constructor = constructors.entrySet().stream()
-                    .reduce((entry1, entry2) -> entry1.getKey().isEmpty() || entry1.getKey().size() > entry2.getKey().size() ? entry1 : entry2)
+                    .reduce((entry1, entry2) -> entry1.getKey().isEmpty()
+                                                || entry1.getKey().size() > entry2.getKey().size()
+                            ? entry1 : entry2)
                     .map(Map.Entry::getValue)
                     .orElseThrow(() -> new RuntimeException("No constructor found in class " + clazz.getName()));
 
@@ -111,9 +111,10 @@ public class ObjectMotherGenerator {
                     .map(parameter -> generateRandomValue(new FieldProperties(parameter.getType(),
                                                                               parameter.getParameterizedType(),
                                                                               overrideValues,
-                                                                              overrideCoordinate))).toArray();
+                                                                              overrideCoordinate.isEmpty() ? parameter.getName() :
+                                                                                      overrideCoordinate + "." + parameter.getName()))).toArray();
             return Pair.of((T) constructor.newInstance(parameters), type);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(String.format("Error instantiating class %s with constructor %s: %s",
                                                      clazz,
                                                      constructor == null ? "not constructor found" : Arrays.stream(
@@ -125,7 +126,8 @@ public class ObjectMotherGenerator {
     }
 
     private <T> T tryStaticMethod(Class<T> clazz,
-                                   Map<String, Overrider> overrideValues) throws InvocationTargetException, IllegalAccessException {
+                                  Map<String, Overrider> overrideValues,
+                                  String overrideCoordinate) throws InvocationTargetException, IllegalAccessException {
         final Method creationMethod = Arrays.stream(clazz.getMethods())
                 .filter(method -> Modifier.isStatic(method.getModifiers()))
                 .filter(method -> method.getReturnType().equals(clazz))
@@ -136,41 +138,33 @@ public class ObjectMotherGenerator {
                         return generateRandomValue(new FieldProperties(parameter.getType(),
                                                                        parameter.getParameterizedType(),
                                                                        overrideValues,
-                                                                       parameter.getName()));
+                                                                       overrideCoordinate.isEmpty() ? parameter.getName() :
+                                                                               overrideCoordinate + "." + parameter.getName()));
 
                     } catch (Exception e) {
-                        log.severe(MessageFormat.format("Error generating parameter {0} for method {1} in class {2}",
-                                  parameter.getType().getSimpleName(),
-                                  creationMethod.getName(),
-                                  clazz.getName()));
+                        log.severe("ObjectMother not able to generate parameter %s for method %s in class %s"
+                                           .formatted(
+                                                   parameter.getType().getSimpleName(),
+                                                   creationMethod.getName(),
+                                                   clazz.getName()));
                         return null;
                     }
                 }).toArray();
         return (T) creationMethod.invoke(null, parameters);
     }
 
-
     private Object generateRandomValue(FieldProperties fieldProperties) {
-        var       overrideValue = fieldProperties.overrideValues().get(fieldProperties.overrideCoordinate());
-        final var supplier      = fieldValueSupplier.supplier(fieldProperties.fieldType());
-        if (supplier != null) {
-            return overrideValue == null ?
-                    supplier.apply(new FieldValueSupplier.SupplierInput(fieldProperties)) :
-                    objectMapper.convertValue(getOverrideValue(fieldProperties.overrideValues().get(fieldProperties.overrideCoordinate())),
-                                              fieldProperties.fieldType());
+        final FieldSupplierType supplierType = FieldSupplierType.forClass(fieldProperties.fieldType());
+
+        if (UNKNOWN.equals(supplierType)) {
+            //try creating the field as an object (Recursive method)
+            return createObject(new ClassProperties(fieldProperties.fieldType(),
+                                                    fieldProperties.overrideValues(),
+                                                    fieldProperties.overrideCoordinate()));
         }
 
-
-        return create(new ClassProperties(fieldProperties.fieldType(),
-                                                fieldProperties.overrideValues(),
-                                                fieldProperties.overrideCoordinate()));
+        return fieldValueSupplier.supplyValue(fieldProperties);
     }
-
-    private String getOverrideValue(Overrider overriderValue) {
-        if (!overriderValue.isRegexPattern()) return overriderValue.value();
-        return faker.regexify(overriderValue.value());
-    }
-
 
 
 }

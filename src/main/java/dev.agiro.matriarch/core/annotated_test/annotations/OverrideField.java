@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.model.annotations;
+package dev.agiro.matriarch.core.annotated_test.annotations;
 
 import java.lang.annotation.*;
 

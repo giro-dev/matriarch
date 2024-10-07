@@ -1,14 +1,15 @@
-package dev.agiro.matriarch.application;
+package dev.agiro.matriarch.core.annotated_test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.agiro.matriarch.model.ClassProperties;
-import dev.agiro.matriarch.model.WrongFormatException;
-import dev.agiro.matriarch.model.annotations.ObjectMotherResource;
-import dev.agiro.matriarch.model.annotations.OverrideField;
-import dev.agiro.matriarch.model.Overrider;
+import dev.agiro.matriarch.core.ObjectMotherGenerator;
+import dev.agiro.matriarch.core.annotated_test.annotations.MotherFactoryResource;
+import dev.agiro.matriarch.core.annotated_test.annotations.OverrideField;
+import dev.agiro.matriarch.domain.ClassProperties;
+import dev.agiro.matriarch.domain.Overrider;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.support.AnnotationConsumer;
@@ -18,41 +19,41 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MotherFactoryResourceProviders implements ArgumentsProvider, AnnotationConsumer<ObjectMotherResource> {
+public class MotherFactoryResourceProviders implements ArgumentsProvider, AnnotationConsumer<MotherFactoryResource> {
 
     private Object[] args;
 
-    private final ObjectMotherGenerator generator = new ObjectMotherGenerator();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMotherGenerator generator    = new ObjectMotherGenerator();
+    private final ObjectMapper          objectMapper = new ObjectMapper();
 
 
-    @java.lang.Override
+    @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
         return Arrays.stream(new Arguments[]{Arguments.arguments(args)});
     }
 
-    @java.lang.Override
-    public void accept(ObjectMotherResource objectMotherResource) {
-        this.args = Stream.of(objectMotherResource.args())
-                .map(argsResource -> generator.create(new ClassProperties(argsResource.targetClass(),
-                                                  computeOverrideDefinitions(argsResource.overrides(),
+    @Override
+    public void accept(MotherFactoryResource motherFactoryResource) {
+        this.args = Stream.of(motherFactoryResource.args())
+                .map(argsResource -> generator.createObject(new ClassProperties<>(argsResource.targetClass(),
+                                                                                computeOverrideDefinitions(argsResource.overrides(),
                                                                              argsResource.jsonOverrides()),
-                                                                      "")))
+                                                                                "")))
                 .toArray();
     }
 
     private Map<String, Overrider> computeOverrideDefinitions(OverrideField[] overrides,
-                                                              String jsonOverrides) {
+                                                             String jsonOverrides) {
         final Map<String, Overrider> overrideValues = Arrays.stream(overrides)
                 .collect(Collectors.toMap(
                         OverrideField::field,
                         overrideValue -> new Overrider(overrideValue.value(),
-                                                      overrideValue.isRegexPattern())));
+                                                       overrideValue.isRegexPattern())));
 
         try {
             flattenNodes(objectMapper.readTree(jsonOverrides), "", overrideValues);
         } catch (JsonProcessingException e) {
-            throw new WrongFormatException("Error in Json format : " + jsonOverrides);
+            throw new ParameterResolutionException("Error in Json format : " + jsonOverrides);
         }
         return overrideValues;
     }

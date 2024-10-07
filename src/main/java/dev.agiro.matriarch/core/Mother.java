@@ -1,9 +1,6 @@
-package dev.agiro.matriarch.application;
+package dev.agiro.matriarch.core;
 
-
-
-
-import dev.agiro.matriarch.model.Overrider;
+import dev.agiro.matriarch.domain.Overrider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,13 +14,16 @@ public class Mother<M> {
     }
 
     public M create() {
-        return objectMotherGenerator.create(clazz);
+        return objectMotherGenerator.createObject(clazz);
     }
     public M create(Map<String, Overrider> overrideValues) {
-        return objectMotherGenerator.create(clazz, overrideValues);
+        return objectMotherGenerator.createObject(clazz, overrideValues);
     }
 
-    public static <R> Builder<R> forObject(Class<R> clazz) {
+    public static <R> Builder<R> builder(Class<R> clazz) {
+        return new Builder<>(clazz);
+    }
+    public static <R> Builder<R> forClass(Class<R> clazz) {
         return new Builder<>(clazz);
     }
 
@@ -39,9 +39,23 @@ public class Mother<M> {
             this.overrides.put(key, value);
             return this;
         }
+        public Builder<R> override(String key, String value) {
+            this.overrides.put(key, Overrider.with(value));
+            return this;
+        }
+        public Builder<R> override(String key, Regex value) {
+            this.overrides.put(key, Overrider.regex(value.value()));
+            return this;
+        }
 
-        public R create() {
+        public R build() {
             return mother.create( overrides);
         }
+        public R birth() {
+            return mother.create( overrides);
+        }
+    }
+
+    public record Regex(String value) {
     }
 }

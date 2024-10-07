@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.model;
+package dev.agiro.matriarch.domain;
 
 
 import java.util.Map;

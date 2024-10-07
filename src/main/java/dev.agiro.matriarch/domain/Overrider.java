@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.model;
+package dev.agiro.matriarch.domain;
 
 public record Overrider(String value, boolean isRegexPattern) {
     public static Overrider with(String value) {
