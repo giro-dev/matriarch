@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.agiro.matriarch.domain.core.ObjectMotherGenerator;
 import dev.agiro.matriarch.domain.model.ClassProperties;
+import dev.agiro.matriarch.domain.model.Overrider;
 import dev.agiro.matriarch.parametrized_test_source.annotations.MotherFactoryResource;
 import dev.agiro.matriarch.parametrized_test_source.annotations.OverrideField;
-import dev.agiro.matriarch.domain.model.Overrider;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.params.provider.Arguments;
@@ -48,7 +48,7 @@ public class MotherFactoryResourceProviders implements ArgumentsProvider, Annota
                 .collect(Collectors.toMap(
                         OverrideField::field,
                         overrideValue -> new Overrider(overrideValue.value(),
-                                                       overrideValue.isRegexPattern())));
+                                                       overrideValue.type())));
 
         try {
             flattenNodes(objectMapper.readTree(jsonOverrides), "", overrideValues);
@@ -60,7 +60,8 @@ public class MotherFactoryResourceProviders implements ArgumentsProvider, Annota
 
     private void flattenNodes(JsonNode node, String currentPath, Map<String, Overrider> flattenedMap) {
         if (node.isValueNode()) {
-            flattenedMap.put(currentPath, new Overrider(node.asText(), false));
+            var type = node.isTextual() ? Overrider.OverriderType.STRING : Overrider.OverriderType.OBJECT;
+            flattenedMap.put(currentPath, new Overrider(node.asText(), type));
         } else if (node.isObject()) {
 
             node.fields().forEachRemaining(entry -> {

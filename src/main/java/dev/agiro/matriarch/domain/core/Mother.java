@@ -20,9 +20,6 @@ public class Mother<M> {
         return objectMotherGenerator.createObject(clazz, overrideValues);
     }
 
-    public static <R> Builder<R> builder(Class<R> clazz) {
-        return new Builder<>(clazz);
-    }
     public static <R> Builder<R> forClass(Class<R> clazz) {
         return new Builder<>(clazz);
     }
@@ -39,15 +36,34 @@ public class Mother<M> {
             this.overrides.put(key, value);
             return this;
         }
+
         public Builder<R> override(String key, String value) {
-            this.overrides.put(key, Overrider.with(value));
-            return this;
-        }
-        public Builder<R> override(String key, Regex value) {
-            this.overrides.put(key, Overrider.regex(value.value()));
+            this.overrides.put(key, null == value ? Overrider.nullValue() : Overrider.with(value));
             return this;
         }
 
+        public Builder<R> override(String key, Regex value) {
+            this.overrides.put(key, null == value ? Overrider.nullValue() : Overrider.regex(value.value()));
+            return this;
+        }
+
+        public Builder<R> override(String key, Object value) {
+            this.overrides.put(key, null == value ? Overrider.nullValue() : Overrider.object(value));
+            return this;
+        }
+
+        public Builder<R> override(String key, Object object, Overrider.OverriderType type) {
+            if (object == null) {
+                this.overrides.put(key, Overrider.nullValue());
+                return this;
+            }
+            switch (type) {
+                case STRING -> this.overrides.put(key, Overrider.with((String) object));
+                case REGEX -> this.overrides.put(key, Overrider.regex((String) object));
+                default -> this.overrides.put(key, Overrider.object(object));
+            }
+            return this;
+        }
         public R build() {
             return mother.create( overrides);
         }

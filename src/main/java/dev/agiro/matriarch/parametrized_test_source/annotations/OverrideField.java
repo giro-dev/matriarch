@@ -1,6 +1,11 @@
 package dev.agiro.matriarch.parametrized_test_source.annotations;
 
-import java.lang.annotation.*;
+import dev.agiro.matriarch.domain.model.Overrider;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
@@ -19,6 +24,6 @@ public @interface OverrideField {
      */
     String value();
 
-    boolean isRegexPattern() default false;
+    Overrider.OverriderType type() default Overrider.OverriderType.STRING;
 
 }
