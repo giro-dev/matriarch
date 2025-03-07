@@ -1,19 +1,18 @@
 package dev.agiro.matriarch.domain.core.generators;
 
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.Definition;
 
 import java.security.SecureRandom;
 
 public class CharacterGenerator extends AbstractGenerator<Character> {
 
-    @Override
-    Class<Character> getClazz() {
-        return Character.class;
+    public CharacterGenerator() {
+        super(Character.class);
     }
 
     @Override
-    Character generate(FieldProperties supplierInput) {
+    public Character generate(Definition supplierInput) {
         return (char) ('a' + new SecureRandom().nextInt(26));
     }
 }

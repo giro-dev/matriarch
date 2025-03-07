@@ -3,8 +3,7 @@ package dev.agiro.matriarch.domain.core.generators;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import dev.agiro.matriarch.domain.model.FieldProperties;
-import dev.agiro.matriarch.domain.model.Overrider;
+import dev.agiro.matriarch.domain.model.Definition;
 import dev.agiro.matriarch.domain.model.PatternType;
 import dev.agiro.matriarch.infrastructure.KnownPatternsStore;
 import net.datafaker.Faker;
@@ -14,7 +13,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class AbstractGenerator<T> implements Function<FieldProperties, T> {
+public abstract class AbstractGenerator<T> implements Function<Definition, T> {
 
     private static final ObjectMapper       objectMapper  = new ObjectMapper()
             .registerModule(new ParameterNamesModule())
@@ -40,32 +39,51 @@ public abstract class AbstractGenerator<T> implements Function<FieldProperties, 
                 });
     }
 
-    Function<FieldProperties, Optional<T>> override = input -> {
+    Function<Definition, Optional<T>> override = input -> {
 
         if (input.overrideValues().containsKey(input.overrideCoordinate())) {
             final var overrider = input.overrideValues().get(input.overrideCoordinate());
-            if (Overrider.OverriderType.OBJECT.equals(overrider.type()) && getClazz().equals(input.fieldType())) {
-                return Optional.of(getClazz().cast(overrider.value()));
-            } else {
-                return Optional.of(getClazz().cast(objectMapper.convertValue(overrider.value(), input.fieldType())));
+            switch (overrider.type()) {
+                case NULL -> {
+                    return Optional.empty();
+                }
+                case OBJECT, STRING -> {
+                    if (overrider.value().getClass().equals(input.clazz())) {
+                        return Optional.of(getClazz().cast(overrider.value()));
+                    }
+                    return Optional.of(getClazz().cast(objectMapper.convertValue(overrider.value(),
+                                                                                 input.clazz())));
+                }
+                case REGEX -> {
+                    return Optional.of(getClazz().cast(objectMapper.convertValue(new Faker().regexify((String)overrider.value()),
+                                                                                 input.clazz())));
+                }
             }
         }
         return patterns.entrySet().stream()
                 .filter(entry -> input.overrideCoordinate().toLowerCase().contains(entry.getKey().toLowerCase()))
-                .map(pattern -> getClazz().cast(pattern.getValue().get()))
+                .map(pattern -> getClazz().cast(objectMapper.convertValue(pattern.getValue().get(), input.clazz())))
                 .findFirst();
     };
 
-    abstract Class<T> getClazz();
+    private final Class<T> fieldType;
+
+    protected AbstractGenerator(Class<T> fieldType) {
+        this.fieldType = fieldType;
+    }
+
+    public Class<T> getClazz(){
+        return fieldType;
+    }
 
 
 
     @Override
-    public T apply(FieldProperties supplierInput){
-        return override.apply(supplierInput).orElse(generate(supplierInput));
+    public T apply(Definition supplierInput){
+            return override.apply(supplierInput).orElse(generate(supplierInput));
     }
 
-    abstract T generate(FieldProperties supplierInput);
+    public abstract T generate(Definition supplierInput);
 
 
 }

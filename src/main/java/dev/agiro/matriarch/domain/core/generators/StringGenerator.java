@@ -1,17 +1,18 @@
 package dev.agiro.matriarch.domain.core.generators;
 
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.Definition;
+
+import java.security.SecureRandom;
 
 public class StringGenerator extends AbstractGenerator<String> {
 
-    @Override
-    Class<String> getClazz() {
-        return String.class;
+    public StringGenerator() {
+        super(String.class);
     }
 
     @Override
-    String generate(FieldProperties supplierInput) {
-        return "";
+    public String generate(Definition def) {
+        return def.overrideCoordinate() + "_" + new SecureRandom().nextInt(1000, 9999);
     }
 }

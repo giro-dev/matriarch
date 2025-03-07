@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.agiro.matriarch.domain.core.ObjectMotherGenerator;
-import dev.agiro.matriarch.domain.model.ClassProperties;
+import dev.agiro.matriarch.domain.model.ClassDefinition;
 import dev.agiro.matriarch.domain.model.Overrider;
 import dev.agiro.matriarch.parametrized_test_source.annotations.MotherFactoryResource;
 import dev.agiro.matriarch.parametrized_test_source.annotations.OverrideField;
@@ -35,7 +35,7 @@ public class MotherFactoryResourceProviders implements ArgumentsProvider, Annota
     @Override
     public void accept(MotherFactoryResource motherFactoryResource) {
         this.args = Stream.of(motherFactoryResource.args())
-                .map(argsResource -> generator.createObject(new ClassProperties<>(argsResource.targetClass(),
+                .map(argsResource -> generator.createObject(new ClassDefinition<>(argsResource.targetClass(),
                                                                                   computeOverrideDefinitions(argsResource.overrides(),
                                                                              argsResource.jsonOverrides()),
                                                                                   "")))

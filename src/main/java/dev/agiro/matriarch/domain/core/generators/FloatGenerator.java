@@ -1,19 +1,18 @@
 package dev.agiro.matriarch.domain.core.generators;
 
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.Definition;
 
 import java.security.SecureRandom;
 
 public class FloatGenerator extends AbstractGenerator<Float> {
 
-    @Override
-    Class<Float> getClazz() {
-        return Float.class;
+    public FloatGenerator() {
+        super(Float.class);
     }
 
     @Override
-    Float generate(FieldProperties supplierInput) {
+    public Float generate(Definition supplierInput) {
         return new SecureRandom().nextFloat();
     }
 }

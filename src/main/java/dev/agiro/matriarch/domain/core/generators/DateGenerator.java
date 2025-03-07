@@ -1,20 +1,20 @@
 package dev.agiro.matriarch.domain.core.generators;
 
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.Definition;
 
 import java.security.SecureRandom;
 import java.util.Date;
 
 public class DateGenerator extends AbstractGenerator<Date> {
 
-    @Override
-    Class<Date> getClazz() {
-        return Date.class;
+    public DateGenerator() {
+        super(Date.class);
     }
 
+
     @Override
-    Date generate(FieldProperties supplierInput) {
+    public Date generate(Definition supplierInput) {
         return new Date(System.currentTimeMillis() - new SecureRandom().nextLong());
     }
 }

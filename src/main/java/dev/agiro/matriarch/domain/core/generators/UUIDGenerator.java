@@ -1,19 +1,18 @@
 package dev.agiro.matriarch.domain.core.generators;
 
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.Definition;
 
 import java.util.UUID;
 
 public class UUIDGenerator extends AbstractGenerator<UUID> {
 
-    @Override
-    Class<UUID> getClazz() {
-        return UUID.class;
+    public UUIDGenerator() {
+        super(UUID.class);
     }
 
     @Override
-    UUID generate(FieldProperties supplierInput) {
+    public UUID generate(Definition supplierInput) {
         return UUID.randomUUID();
     }
 }

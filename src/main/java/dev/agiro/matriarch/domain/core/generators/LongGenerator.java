@@ -1,19 +1,18 @@
 package dev.agiro.matriarch.domain.core.generators;
 
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.Definition;
 
 import java.security.SecureRandom;
 
 public class LongGenerator extends AbstractGenerator<Long> {
 
-    @Override
-    Class<Long> getClazz() {
-        return Long.class;
+    public LongGenerator() {
+        super(Long.class);
     }
 
     @Override
-    Long generate(FieldProperties supplierInput) {
+    public Long generate(Definition supplierInput) {
         return new SecureRandom().nextLong();
     }
 }

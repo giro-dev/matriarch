@@ -1,19 +1,19 @@
 package dev.agiro.matriarch.domain.core.generators;
 
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+
+import dev.agiro.matriarch.domain.model.Definition;
 
 import java.security.SecureRandom;
 
 public class DoubleGenerator extends AbstractGenerator<Double> {
 
-    @Override
-    Class<Double> getClazz() {
-        return Double.class;
+    public DoubleGenerator() {
+        super(Double.class);
     }
 
     @Override
-    Double generate(FieldProperties supplierInput) {
+    public Double generate(Definition supplierInput) {
         return new SecureRandom().nextDouble();
     }
 }

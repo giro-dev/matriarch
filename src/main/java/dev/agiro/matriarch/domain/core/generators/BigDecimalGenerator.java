@@ -1,20 +1,21 @@
 package dev.agiro.matriarch.domain.core.generators;
 
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.Definition;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 
 public class BigDecimalGenerator extends AbstractGenerator<BigDecimal> {
 
-    @Override
-    Class<BigDecimal> getClazz() {
-        return BigDecimal.class;
+    public static final Class<?> type = BigDecimal.class;
+
+    public BigDecimalGenerator() {
+        super(BigDecimal.class);
     }
 
     @Override
-    BigDecimal generate(FieldProperties supplierInput) {
+    public BigDecimal generate(Definition supplierInput) {
         return BigDecimal.valueOf(new SecureRandom().nextDouble());
     }
 }

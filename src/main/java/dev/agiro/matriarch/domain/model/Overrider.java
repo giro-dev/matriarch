@@ -14,9 +14,9 @@ public record Overrider(Object value, OverriderType type) {
     }
 
     public static Overrider nullValue() {
-        return new Overrider(null, OverriderType.OBJECT);
+        return new Overrider(null, OverriderType.NULL);
     }
 
-    public enum OverriderType {STRING, REGEX, OBJECT}
+    public enum OverriderType {NULL, STRING, REGEX, OBJECT}
 }
 

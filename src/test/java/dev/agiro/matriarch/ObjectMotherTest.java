@@ -28,9 +28,9 @@ class ObjectMotherTest {
                   () -> assertNotNull(basicObject.getDate()),
                   () -> assertNotNull(basicObject.getNestedObject()),
                   () -> assertNotNull(basicObject.getNestedObject().getString()),
-                  () -> assertNotNull(basicObject.getNestedObject().getInteger())/*,
+                  () -> assertNotNull(basicObject.getNestedObject().getInteger()),
                   () -> assertFalse(basicObject.getList().isEmpty()),
-                  () -> assertFalse(basicObject.getObjectList().isEmpty())*/
+                  () -> assertFalse(basicObject.getObjectList().isEmpty())
         );
     }
 

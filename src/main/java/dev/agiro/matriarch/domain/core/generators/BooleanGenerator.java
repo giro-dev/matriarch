@@ -1,19 +1,18 @@
 package dev.agiro.matriarch.domain.core.generators;
 
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.Definition;
 
 import java.security.SecureRandom;
 
 public class BooleanGenerator extends AbstractGenerator<Boolean> {
 
-    @Override
-    Class<Boolean> getClazz() {
-        return Boolean.class;
+    public BooleanGenerator() {
+        super(Boolean.class);
     }
 
     @Override
-    Boolean generate(FieldProperties supplierInput) {
+    public Boolean generate(Definition supplierInput) {
         return new SecureRandom().nextBoolean();
     }
 }

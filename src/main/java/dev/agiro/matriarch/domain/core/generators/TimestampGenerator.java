@@ -1,7 +1,7 @@
 package dev.agiro.matriarch.domain.core.generators;
 
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.Definition;
 
 import java.security.SecureRandom;
 import java.sql.Timestamp;
@@ -9,14 +9,13 @@ import java.time.Instant;
 
 public class TimestampGenerator extends AbstractGenerator<Timestamp> {
 
-    @Override
-    Class<Timestamp> getClazz() {
-        return Timestamp.class;
+    public TimestampGenerator() {
+        super(Timestamp.class);
     }
 
     @Override
-    Timestamp generate(FieldProperties supplierInput) {
-        return Timestamp.from(Instant.ofEpochMilli(Math.abs(new SecureRandom().nextLong()) % Instant.now().toEpochMilli()));
+    public Timestamp generate(Definition supplierInput) {
+        return Timestamp.from(Instant.ofEpochMilli(Math.absExact(new SecureRandom().nextLong()) % Instant.now().toEpochMilli()));
     }
 }
 

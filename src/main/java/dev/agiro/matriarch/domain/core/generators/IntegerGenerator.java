@@ -1,18 +1,23 @@
 package dev.agiro.matriarch.domain.core.generators;
 
-import dev.agiro.matriarch.domain.model.FieldProperties;
+import dev.agiro.matriarch.domain.model.Definition;
 
 import java.security.SecureRandom;
 
 public class IntegerGenerator extends AbstractGenerator<Integer> {
 
+
+    public IntegerGenerator() {
+        super(Integer.class);
+    }
+
     @Override
-    Class<Integer> getClazz() {
+    public Class<Integer> getClazz() {
         return Integer.class;
     }
 
     @Override
-    Integer generate(FieldProperties supplierInput) {
-        return new SecureRandom().nextInt();
+    public Integer generate(Definition supplierInput) {
+        return Math.absExact(new SecureRandom().nextInt());
     }
 }
