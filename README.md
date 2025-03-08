@@ -1,8 +1,10 @@
-#       Matriarch         
-## Object Mother Generator 
+![logo_90.png](documentation/logo_90.png)
 
-A library to help developers in the testing process. It will generate objects with random field values for testing.
-It also brings the abiliti to force values to be placed in defined fields.
+Matriarch is a library to help developers in the testing process. It generates objects with random values in a easy way.
+bringing you the chance to force values to be placed in defined fields.
+
+
+
 
 ### Instalation
 Add maven dependency:
