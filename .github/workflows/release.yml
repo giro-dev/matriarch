@@ -25,5 +25,5 @@ jobs:
 
       - name: Build and deploy
         run: |
-          mvn clean deploy -P release --batch-mode \
+          mvn clean deploy --batch-mode \
           -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
