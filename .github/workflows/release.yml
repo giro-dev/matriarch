@@ -18,7 +18,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          server-id: ${{ variables.SERVER }}
+          server-id: ${{ SERVER }}
           server-username: ${{ secrets.OSSRH_USERNAME }}
           server-password: ${{ secrets.OSSRH_PASSWORD }}
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
