@@ -9,22 +9,24 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ListGenerator extends AbstractGenerator<List<?>> implements MultiGenerator {
+public class SetGenerator extends AbstractGenerator<Set<?>> implements MultiGenerator {
 
     private final Map<ClazzGenerators, AbstractGenerator<?>> generators;
 
     @SuppressWarnings("unchecked")
-    public ListGenerator(Map<ClazzGenerators, AbstractGenerator<?>> generators) {
-        super( (Class<List<?>>) (Class<?>) List.class);
+    public SetGenerator(Map<ClazzGenerators, AbstractGenerator<?>> generators) {
+        super( (Class<Set<?>>) (Class<?>) List.class);
         this.generators = generators;
     }
 
 
     @Override
-    public List<?> generate(Definition supplierInput) {
+    public Set<?> generate(Definition supplierInput) {
         try {
             final Class<?> aClass = Class.forName(supplierInput.parametrizedType()[0].getTypeName());
             var generator = generators.get(ClazzGenerators.forClass(aClass));
@@ -38,7 +40,7 @@ public class ListGenerator extends AbstractGenerator<List<?>> implements MultiGe
                     .mapToObj(i -> generator.apply(new ClassDefinition<>(aClass,
                                                                             supplierInput.overrideValues(),
                                                                             supplierInput.overrideCoordinate() + "[%d]".formatted(i))))
-                    .toList();
+                    .collect(Collectors.toSet());
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

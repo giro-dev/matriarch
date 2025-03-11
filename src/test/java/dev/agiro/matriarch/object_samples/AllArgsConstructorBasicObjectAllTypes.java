@@ -26,6 +26,7 @@ public class AllArgsConstructorBasicObjectAllTypes {
     private List<String>                       list;
     private List<NoArgsConstructorBasicObject> objectList;
     private Map<String, NoArgsConstructorBasicObject> map;
+    private SimpleRecord[] records;
 
 
     public AllArgsConstructorBasicObjectAllTypes(String string,

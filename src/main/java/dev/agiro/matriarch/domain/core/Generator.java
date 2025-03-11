@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 public class Generator implements Function<Definition, Object> {
     
-    private Map<ClazzGenerators, AbstractGenerator<?>> generators = new EnumMap<>(ClazzGenerators.class);
+    private final Map<ClazzGenerators, AbstractGenerator<?>> generators = new EnumMap<>(ClazzGenerators.class);
     
     public Generator() {
 
@@ -35,6 +35,5 @@ public class Generator implements Function<Definition, Object> {
     public Object apply(Definition supplierInput) {
         final AbstractGenerator<?> abstractGenerator = generators.get(ClazzGenerators.forClass(supplierInput.clazz()));
         return abstractGenerator.apply(supplierInput);
-
     }
 }

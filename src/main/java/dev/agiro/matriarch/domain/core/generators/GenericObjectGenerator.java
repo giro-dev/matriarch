@@ -164,7 +164,7 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
 
 
     @Override
-    public Map<ClazzGenerators, AbstractGenerator<?>> getGenerators() {
+    public Map<ClazzGenerators, AbstractGenerator<?>> getGenerator() {
         return generators;
     }
 }
