@@ -6,27 +6,25 @@ import dev.agiro.matriarch.domain.model.ClassDefinition;
 import dev.agiro.matriarch.domain.model.Definition;
 
 import java.security.SecureRandom;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
-public class ListGenerator extends AbstractGenerator<List<?>> implements MultiGenerator {
+public class ArrayGenerator extends AbstractGenerator<Object[]> implements MultiGenerator {
 
     private final Map<ClazzGenerators, AbstractGenerator<?>> generators;
 
     @SuppressWarnings("unchecked")
-    public ListGenerator(Map<ClazzGenerators, AbstractGenerator<?>> generators) {
-        super( (Class<List<?>>) (Class<?>) List.class);
+    public ArrayGenerator(Map<ClazzGenerators, AbstractGenerator<?>> generators) {
+        super( Object[].class);
         this.generators = generators;
     }
 
 
     @Override
-    public List<?> generate(Definition supplierInput) {
-        try {
-            final Class<?> aClass = Class.forName(supplierInput.parametrizedType()[0].getTypeName());
+    public Object[] generate(Definition supplierInput) {
+            final Class<?> aClass = supplierInput.clazz().getComponentType();
             var generator = generators.get(ClazzGenerators.forClass(aClass));
             Pattern pattern = Pattern.compile(supplierInput.overrideCoordinate() + "\\[(\\d*)]");
             Optional<Integer> overridedSize = supplierInput.overrideValues().keySet().stream()
@@ -38,10 +36,8 @@ public class ListGenerator extends AbstractGenerator<List<?>> implements MultiGe
                     .mapToObj(i -> generator.apply(new ClassDefinition<>(aClass,
                                                                             supplierInput.overrideValues(),
                                                                             supplierInput.overrideCoordinate() + "[%d]".formatted(i))))
-                    .toList();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+                    .toArray();
+
     }
 
     @Override

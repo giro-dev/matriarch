@@ -6,6 +6,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public enum ClazzGenerators {
@@ -24,8 +26,8 @@ public enum ClazzGenerators {
     DATE(LocalDateGenerator.class, List.of(LocalDate.class)),
     //ARRAY(ArrayGenerator.class, List.of(Array.class)),
     LIST(ListGenerator.class, List.of(List.class)),
-    //SET(SetGenerator.class, List.of(Set.class)),
-    //MAP(MapGenerator.class, List.of(Map.class)),
+    SET(SetGenerator.class, List.of(Set.class)),
+    MAP(MapGenerator.class, List.of(Map.class)),
     ENUM(EnumGenerator.class, List.of()),
     GENERIC(GenericObjectGenerator.class, List.of());
 
