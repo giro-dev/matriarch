@@ -148,3 +148,8 @@ patterns:
 1. As a Junit `@ParametrizedTest` source
 2. As a instance
 
+
+# Thanks to Opensource
+This library is using some other opensource projects very thanks to :
+ - https://www.datafaker.net
+ - https://github.com/FasterXML/jackson
