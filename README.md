@@ -63,6 +63,8 @@ var claimCategorizedEvent = Mother.builder(PurchaseAggregate.class)
         /* 3.ii */.override("aggregate.purchase.date", Instant.now())
         /* 4.i */.override("aggregate.purchase.claimDate", Overrider.nullValue())
         /* 4.ii */.override("aggregate.purchase.voucher", null)
+        /* 5.i */.override("aggregate.list[3].date", Instant.now())
+        /* 5.ii */.override("aggregate.map[thomas].date", Instant.now())
         .build();
  ```
 
@@ -81,6 +83,11 @@ there are two types of overrides:
 4. Overrider.nullValue(): it will set the field as null. Could be used as:
    1. `.override("aggregate.purchase.claimDate", Overrider.nullValue())`
    2. `.override("aggregate.purchase.voucher", null)`
+5. You can Overrire a List element using `[<index>]` and Map value using `[<key>]`
+   1. by default the list size is random between 1 and 15. If you specify an index bigger than that, the list will be filled as this index (randomly in cases where no override definition exists)
+   2. Map objects are limited at the moment to a Map<Object, Object>, it will try to generate:
+     - A **key** with the `<key>` to the object defined as key 
+     - A **value** as defined.  !is not allowed to generate random values for Map or Collection (if you need it you have to pass them as a Overrider.object(<CollectionValue>))     
 
 ### As Annotation for Junit Parametrized Test 
 Add a `@MotherFactoryResource` annotation to define the parameters
