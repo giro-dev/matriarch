@@ -3,6 +3,7 @@ package dev.agiro.matriarch;
 import dev.agiro.matriarch.domain.core.Mother;
 import dev.agiro.matriarch.object_samples.SimpleRecord; // Assuming this is the correct package
 import dev.agiro.matriarch.object_samples.records.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
