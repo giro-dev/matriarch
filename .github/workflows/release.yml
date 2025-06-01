@@ -25,4 +25,5 @@ jobs:
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Build and deploy
-        run: mvn clean deploy --batch-mode
+        run: mvn clean deploy --batch-mode -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+
