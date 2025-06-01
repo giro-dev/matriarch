@@ -25,5 +25,7 @@ jobs:
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Build and deploy
-        run: mvn clean deploy --batch-mode -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
-
+        run: |
+          export OSSRH_USERNAME_ENV=${{ secrets.OSSRH_USERNAME }}
+          export OSSRH_PASSWORD_ENV=${{ secrets.OSSRH_PASSWORD }}
+          mvn clean deploy --batch-mode -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
