@@ -23,7 +23,7 @@ public abstract class AbstractGenerator<T> implements Function<Definition, T> {
     static Map<String, Supplier<String>> patterns = new HashMap<>();
 
     static {
-        KnownPatternsStore.getInstance().getPatterns().patterns()
+        KnownPatternsStore.getInstance().getPatterns().getPatterns()
                 .forEach(pattern -> {
                     switch (PatternType.valueOf(pattern.type().toUpperCase())) {
                         case STRING -> patterns.put(pattern.coordinate(), pattern::value);

@@ -1,15 +1,20 @@
 package dev.agiro.matriarch.domain.model;
 
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Collections;
+import java.util.Map;
+
 public interface Definition {
     Class<?> clazz();
 
-    java.lang.reflect.Type[] parametrizedType();
+    Type[] parametrizedType();
 
-    java.util.Map<String, Overrider> overrideValues();
+    Map<String, Overrider> overrideValues();
 
     String overrideCoordinate();
 
-    default java.util.Map<java.lang.reflect.TypeVariable<?>, java.lang.reflect.Type> getResolvedGenericTypeMap() {
-        return java.util.Collections.emptyMap();
+    default Map<TypeVariable<?>, Type> getResolvedGenericTypeMap() {
+        return Collections.emptyMap();
     }
 }

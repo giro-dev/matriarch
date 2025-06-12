@@ -7,8 +7,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,13 +48,13 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
 
         // This map will hold the resolution of the current instance's own type parameters.
         // For example, if instance is Box<String>, this map becomes {T -> String}.
-        Map<java.lang.reflect.TypeVariable<?>, java.lang.reflect.Type> instanceSpecificTypeMap = new java.util.HashMap<>();
+        Map<TypeVariable<?>, Type> instanceSpecificTypeMap = new HashMap<>();
         Class<?> instanceClass = instance.getInstance().getClass(); // e.g., Box.class
-        java.lang.reflect.TypeVariable<?>[] typeParameters = instanceClass.getTypeParameters(); // [T for Box]
+        TypeVariable<?>[] typeParameters = instanceClass.getTypeParameters(); // [T for Box]
 
         // actualTypes are from the Definition of the field/parameter that *led* to this GenericObjectGenerator call
         // e.g. if a field was `Box<String> myBox`, classDefinition.parametrizedType() would be `[String.class]`
-        java.lang.reflect.Type[] actualTypeArguments = classDefinition.parametrizedType();
+        Type[] actualTypeArguments = classDefinition.parametrizedType();
 
         if (typeParameters.length > 0 && actualTypeArguments.length > 0 && typeParameters.length == actualTypeArguments.length) {
             for (int i = 0; i < typeParameters.length; i++) {
@@ -90,7 +93,7 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
                                  Field field,
                                  Map<String, Overrider> overrideValues,
                                  String currentField,
-                                 Map<java.lang.reflect.TypeVariable<?>, java.lang.reflect.Type> resolvedGenericTypeMapFromParent) { // Renamed for clarity
+                                 Map<TypeVariable<?>, Type> resolvedGenericTypeMapFromParent) { // Renamed for clarity
 
         try {
             if (!Modifier.isFinal(field.getModifiers())) {
@@ -144,7 +147,7 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
 
     // This map is for resolving type variables that might appear in constructor parameters,
     // based on the context where this class (clazz) is being instantiated.
-    private ConstructorMethod<?> getInstance(Definition classDefinition, Map<java.lang.reflect.TypeVariable<?>, java.lang.reflect.Type> contextResolvedTypeMap) {
+    private ConstructorMethod<?> getInstance(Definition classDefinition, Map<TypeVariable<?>, Type> contextResolvedTypeMap) {
         final Class<?> clazz = classDefinition.clazz();
         final String overrideCoordinate = classDefinition.overrideCoordinate();
 
@@ -153,7 +156,7 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
                 .filter(method -> Modifier.isStatic(method.getModifiers()) &&
                                    Modifier.isPublic(method.getModifiers()) &&
                                    clazz.isAssignableFrom(method.getReturnType()))
-                .collect(Collectors.toList());
+                .toList();
 
         // Prioritize no-arg static factory methods
         java.lang.reflect.Method noArgStaticFactory = staticFactoryMethods.stream()
