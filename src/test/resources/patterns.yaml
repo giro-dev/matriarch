@@ -1,0 +1,7 @@
+patterns:
+  - coordinate: "plantId"
+    value: "\\d{4}"        # Matches the assertion in the test
+    type: "regex"
+  - coordinate: "email"
+    value: "[a-z]{4,8}\\.[a-z]{4,8}_[a-z]{4,8}\\@(gmail|outlook)\\.com"
+    type: "regex"

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dev.agiro</groupId>
     <artifactId>matriarch</artifactId>
-    <version>0.4.2</version>
+    <version>0.4.3</version>
     <name>Matriarch - ObjectMother tool</name>
     <description>A tool for generating test objects using the Object Mother pattern.</description>
     <url>https://github.com/giro-dev/matriarch</url>

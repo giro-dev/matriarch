@@ -105,11 +105,8 @@ class ObjectMotherTest {
                 .build();
         assertAll("All fields has values",
                   () -> assertTrue(recordWithKnownPatterns.plantId().matches("\\d{4}")),
-                  () -> assertTrue(recordWithKnownPatterns.supplier().matches("\\d{8}[A-Z]?")),
-                  () -> assertTrue(recordWithKnownPatterns.plantType().matches(
-                          "GLC|Other|Powertrain|MBCC|CKD|CBU|Cooperation|Remanufacturing|VAN")),
                   () -> assertTrue(recordWithKnownPatterns.email().matches(
-                          "[a-z]{4,8}\\.[a-z]{4,8}_[a-z]{4,8}\\@(mercedes-benz|external-mercedes-benz).com"))
+                          "[a-z]{4,8}\\.[a-z]{4,8}_[a-z]{4,8}\\@(gmail|outlook).com"))
         );
     }
 

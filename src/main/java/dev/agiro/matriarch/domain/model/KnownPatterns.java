@@ -6,11 +6,9 @@ import java.util.List;
 import java.util.Objects;
 
 public class KnownPatterns {
-    private List<Pattern> patterns;
+    private List<Pattern> patterns = new ArrayList<>();
 
     public KnownPatterns() {}
-
-
 
 
     public KnownPatterns(List<Pattern> patterns) {
@@ -24,9 +22,8 @@ public class KnownPatterns {
         return patterns;
     }
 
-    public KnownPatterns setPatterns(List<Pattern> patterns) {
+    public void setPatterns(List<Pattern> patterns) {
         this.patterns = patterns;
-        return this;
     }
 
     public List<Pattern> getPatterns() {
