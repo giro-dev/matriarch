@@ -23,16 +23,16 @@ public abstract class AbstractGenerator<T> implements Function<Definition, T> {
     static Map<String, Supplier<String>> patterns = new HashMap<>();
 
     static {
-        KnownPatternsStore.getInstance().getPatterns().patterns()
+        KnownPatternsStore.getInstance().getPatterns().getPatterns()
                 .forEach(pattern -> {
-                    switch (PatternType.valueOf(pattern.type().toUpperCase())) {
-                        case STRING -> patterns.put(pattern.coordinate(), pattern::value);
-                        case REGEX -> patterns.put(pattern.coordinate(), () -> new Faker().regexify(pattern.value()));
+                    switch (PatternType.valueOf(pattern.getType().toUpperCase())) {
+                        case STRING -> patterns.put(pattern.getCoordinate(), pattern::getValue);
+                        case REGEX -> patterns.put(pattern.getCoordinate(), () -> new Faker().regexify(pattern.getValue()));
                         case LIST -> {
-                            final List<String> list = Arrays.stream(pattern.value().split(","))
+                            final List<String> list = Arrays.stream(pattern.getValue().split(","))
                                     .map(String::trim)
                                     .toList();
-                            patterns.put(pattern.coordinate(), () -> list.get(new SecureRandom().nextInt(list.size())));
+                            patterns.put(pattern.getCoordinate(), () -> list.get(new SecureRandom().nextInt(list.size())));
                         }
 
                     }
