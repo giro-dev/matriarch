@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.domain.core.generators;
+package dev.agiro.matriarch.generators;
 
 
 

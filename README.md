@@ -158,5 +158,4 @@ patterns:
 
 # Thanks to Opensource
 This library is using some other opensource projects very thanks to :
- - https://www.datafaker.net
  - https://github.com/FasterXML/jackson

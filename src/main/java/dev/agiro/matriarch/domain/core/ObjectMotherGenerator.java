@@ -5,6 +5,7 @@ import dev.agiro.matriarch.domain.model.ClassDefinition;
 import dev.agiro.matriarch.domain.model.Overrider;
 import dev.agiro.matriarch.domain.model.TypeReference;
 import dev.agiro.matriarch.domain.model.TypeReferenceDefinition;
+import dev.agiro.matriarch.generators.Generator;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.domain.core.generators;
+package dev.agiro.matriarch.generators;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

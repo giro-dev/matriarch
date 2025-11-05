@@ -7,7 +7,7 @@ import dev.agiro.matriarch.domain.model.Definition;
 import dev.agiro.matriarch.domain.model.PatternType;
 import dev.agiro.matriarch.infrastructure.CompositePatternRepository;
 import dev.agiro.matriarch.infrastructure.PatternRepository;
-import net.datafaker.Faker;
+import dev.agiro.matriarch.util.RegexGenerator;
 
 import java.security.SecureRandom;
 import java.util.*;
@@ -29,7 +29,7 @@ public abstract class AbstractGenerator<T> implements Function<Definition, T> {
                 .forEach(pattern -> {
                     switch (PatternType.valueOf(pattern.getType().toUpperCase())) {
                         case STRING -> patterns.put(pattern.getCoordinate(), pattern::getValue);
-                        case REGEX -> patterns.put(pattern.getCoordinate(), () -> new Faker().regexify(pattern.getValue()));
+                        case REGEX -> patterns.put(pattern.getCoordinate(), () -> RegexGenerator.generate(pattern.getValue()));
                         case LIST -> {
                             final List<String> list = Arrays.stream(pattern.getValue().split(","))
                                     .map(String::trim)
@@ -69,7 +69,7 @@ public abstract class AbstractGenerator<T> implements Function<Definition, T> {
                                                                                  input.clazz())));
                 }
                 case REGEX -> {
-                    return Optional.of(getClazz().cast(objectMapper.convertValue(new Faker().regexify((String)overrider.value()),
+                    return Optional.of(getClazz().cast(objectMapper.convertValue(RegexGenerator.generate((String)overrider.value()),
                                                                                  input.clazz())));
                 }
             }
