@@ -1,5 +1,7 @@
 package dev.agiro.matriarch.domain.model;
 
+import java.util.function.Supplier;
+
 public record Overrider(Object value, OverriderType type) {
     public static Overrider with(String value) {
         return new Overrider(value, OverriderType.STRING);
@@ -13,10 +15,14 @@ public record Overrider(Object value, OverriderType type) {
         return new Overrider(object, OverriderType.OBJECT);
     }
 
+    public static Overrider supplier(Supplier<?> supplier) {
+        return new Overrider(supplier, OverriderType.SUPPLIER);
+    }
+
     public static Overrider nullValue() {
         return new Overrider(null, OverriderType.NULL);
     }
 
-    public enum OverriderType {NULL, STRING, REGEX, OBJECT}
+    public enum OverriderType {NULL, STRING, REGEX, OBJECT, SUPPLIER}
 }
 
