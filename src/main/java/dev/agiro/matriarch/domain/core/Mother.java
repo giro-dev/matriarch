@@ -108,7 +108,7 @@ public class Mother<M> {
          * Usage: .forField("email", () -> faker.internet().emailAddress())
          */
         public Builder<R> forField(String fieldName, Supplier<?> generator) {
-            this.overrides.put(fieldName, Overrider.object(generator.get()));
+            this.overrides.put(fieldName, Overrider.supplier(generator));
             return this;
         }
 
