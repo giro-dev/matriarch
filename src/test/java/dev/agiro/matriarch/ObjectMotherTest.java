@@ -107,7 +107,7 @@ class ObjectMotherTest {
         assertAll("All fields has values",
                   () -> assertTrue(recordWithKnownPatterns.plantId().matches("\\d{4}")),
                   () -> assertTrue(recordWithKnownPatterns.email().matches(
-                          "[a-z]{4,8}\\.[a-z]{4,8}_[a-z]{4,8}\\@(gmail|outlook).com"))
+                          "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"))
         );
     }
 

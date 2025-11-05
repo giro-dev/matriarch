@@ -5,7 +5,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import dev.agiro.matriarch.domain.model.Definition;
 import dev.agiro.matriarch.domain.model.PatternType;
-import dev.agiro.matriarch.infrastructure.KnownPatternsStore;
+import dev.agiro.matriarch.infrastructure.CompositePatternRepository;
+import dev.agiro.matriarch.infrastructure.PatternRepository;
 import net.datafaker.Faker;
 
 import java.security.SecureRandom;
@@ -15,15 +16,16 @@ import java.util.function.Supplier;
 
 public abstract class AbstractGenerator<T> implements Function<Definition, T> {
 
-    private static final ObjectMapper       objectMapper  = new ObjectMapper()
+    private static final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new ParameterNamesModule())
             //.registerModule(new Jdk8Module())
             .registerModule(new JavaTimeModule());
 
+    private static final PatternRepository patternRepository = new CompositePatternRepository();
     static Map<String, Supplier<String>> patterns = new HashMap<>();
 
     static {
-        KnownPatternsStore.getInstance().getPatterns().getPatterns()
+        patternRepository.getPatterns().getPatterns()
                 .forEach(pattern -> {
                     switch (PatternType.valueOf(pattern.getType().toUpperCase())) {
                         case STRING -> patterns.put(pattern.getCoordinate(), pattern::getValue);
@@ -92,7 +94,6 @@ public abstract class AbstractGenerator<T> implements Function<Definition, T> {
 
     @Override
     public T apply(Definition supplierInput){
-            // Check if there's an explicit NULL override first
             if (supplierInput.overrideValues().containsKey(supplierInput.overrideCoordinate())) {
                 final var overrider = supplierInput.overrideValues().get(supplierInput.overrideCoordinate());
                 if (overrider.type() == dev.agiro.matriarch.domain.model.Overrider.OverriderType.NULL) {
