@@ -26,6 +26,13 @@ public class ListGenerator extends AbstractGenerator<List<?>> implements MultiGe
     @Override
     public List<?> generate(Definition supplierInput) {
         try {
+            // Check if parametrizedType is available and not null
+            if (supplierInput.parametrizedType() == null ||
+                supplierInput.parametrizedType().length == 0 ||
+                supplierInput.parametrizedType()[0] == null) {
+                // Default to Object if no type information available
+                return java.util.Collections.emptyList();
+            }
             final Class<?> aClass = Class.forName(supplierInput.parametrizedType()[0].getTypeName());
             var generator = generators.get(ClazzGenerators.forClass(aClass));
             Pattern pattern = Pattern.compile(supplierInput.overrideCoordinate() + "\\[(\\d*)]");

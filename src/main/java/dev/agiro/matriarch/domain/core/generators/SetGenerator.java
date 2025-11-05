@@ -28,6 +28,13 @@ public class SetGenerator extends AbstractGenerator<Set<?>> implements MultiGene
     @Override
     public Set<?> generate(Definition supplierInput) {
         try {
+            // Check if parametrizedType is available and not null
+            if (supplierInput.parametrizedType() == null ||
+                supplierInput.parametrizedType().length == 0 ||
+                supplierInput.parametrizedType()[0] == null) {
+                // Default to empty set if no type information available
+                return java.util.Collections.emptySet();
+            }
             final Class<?> aClass = Class.forName(supplierInput.parametrizedType()[0].getTypeName());
             var generator = generators.get(ClazzGenerators.forClass(aClass));
             Pattern pattern = Pattern.compile(supplierInput.overrideCoordinate() + "\\[(\\d*)]");

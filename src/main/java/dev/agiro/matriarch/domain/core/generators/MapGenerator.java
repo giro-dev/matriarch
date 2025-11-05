@@ -28,6 +28,14 @@ public class MapGenerator extends AbstractGenerator<Map<?,?>> implements MultiGe
     @Override
     public Map<?,?> generate(Definition supplierInput) {
         try {
+            // Check if parametrizedType is available and not null
+            if (supplierInput.parametrizedType() == null ||
+                supplierInput.parametrizedType().length < 2 ||
+                supplierInput.parametrizedType()[0] == null ||
+                supplierInput.parametrizedType()[1] == null) {
+                // Default to empty map if no type information available
+                return java.util.Collections.emptyMap();
+            }
             final Class<?> keyClass = Class.forName(supplierInput.parametrizedType()[0].getTypeName());
             var keyGenerator = this.generator.get(ClazzGenerators.forClass(keyClass));
             final Class<?> valueClass = Class.forName(supplierInput.parametrizedType()[1].getTypeName());
