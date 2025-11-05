@@ -72,6 +72,42 @@ public class Mother<M> {
          * Override a specific field with a value.
          */
         public Builder<R> override(String key, Overrider value) {
+            return forField(key, value);
+        }
+
+        /**
+         * Override a specific field with a string value.
+         */
+        public Builder<R> override(String key, String value) {
+            return forField(key, value);
+        }
+
+        /**
+         * Override a specific field with a regex pattern.
+         */
+        public Builder<R> override(String key, Regex value) {
+            return forField(key, value);
+        }
+
+        /**
+         * Override a specific field with an object value.
+         */
+        public Builder<R> override(String key, Object value) {
+            return forField(key, value);
+        }
+
+        /**
+         * Override a specific field with a value and type.
+         */
+        public Builder<R> override(String key, Object object, Overrider.OverriderType type) {
+            return forField(key, object, type);
+
+        }
+
+        /**
+         * Override a specific field with a value.
+         */
+        public Builder<R> forField(String key, Overrider value) {
             config.addOverride(key, value);
             return this;
         }
@@ -79,7 +115,7 @@ public class Mother<M> {
         /**
          * Override a specific field with a string value.
          */
-        public Builder<R> override(String key, String value) {
+        public Builder<R> forField(String key, String value) {
             config.addOverride(key, value == null ? Overrider.nullValue() : Overrider.with(value));
             return this;
         }
@@ -87,7 +123,7 @@ public class Mother<M> {
         /**
          * Override a specific field with a regex pattern.
          */
-        public Builder<R> override(String key, Regex value) {
+        public Builder<R> forField(String key, Regex value) {
             config.addOverride(key, value == null ? Overrider.nullValue() : Overrider.regex(value.value()));
             return this;
         }
@@ -95,7 +131,7 @@ public class Mother<M> {
         /**
          * Override a specific field with an object value.
          */
-        public Builder<R> override(String key, Object value) {
+        public Builder<R> forField(String key, Object value) {
             config.addOverride(key, value == null ? Overrider.nullValue() : Overrider.object(value));
             return this;
         }
@@ -103,7 +139,7 @@ public class Mother<M> {
         /**
          * Override a specific field with a value and type.
          */
-        public Builder<R> override(String key, Object object, Overrider.OverriderType type) {
+        public Builder<R> forField(String key, Object object, Overrider.OverriderType type) {
             if (object == null) {
                 config.addOverride(key, Overrider.nullValue());
                 return this;
