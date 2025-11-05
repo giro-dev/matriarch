@@ -142,8 +142,6 @@
                 <configuration>
                     <publishingServerId>central</publishingServerId>
                     <autoPublish>true</autoPublish>
-                    <username>${env.OSSRH_USERNAME_ENV}</username>
-                    <password>${env.OSSRH_PASSWORD_ENV}</password>
                 </configuration>
             </plugin>
             <plugin>
