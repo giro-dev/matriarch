@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.domain.core.generators;
+package dev.agiro.matriarch.generators;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

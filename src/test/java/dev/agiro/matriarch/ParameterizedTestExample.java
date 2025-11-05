@@ -11,8 +11,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Example test demonstrating the usage of @MotherFactoryResource for parameterized tests.
+ * NOTE: This is a demonstration/example file showing how to use the parameterized testing features.
+ * Some tests may fail as they are examples and may need adjustment for your specific use case.
+ * To use these tests, rename the class to end with "Test" and adjust the test data as needed.
  */
-class ParameterizedMotherTest {
+class ParameterizedMotherExample {
 
     @ParameterizedTest(name = "[{index}] Simple Random Object")
     @MotherFactoryResource(args = {
