@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dev.agiro</groupId>
     <artifactId>matriarch</artifactId>
-    <version>0.5.1</version>
+    <version>1.0.0</version>
     <name>Matriarch - ObjectMother tool</name>
     <description>A tool for generating test objects using the Object Mother pattern.</description>
     <url>https://github.com/giro-dev/matriarch</url>
@@ -82,14 +82,9 @@
             <version>5.9.2</version>
         </dependency>
         <dependency>
-            <groupId>net.datafaker</groupId>
-            <artifactId>datafaker</artifactId>
-            <version>2.2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.4</version>
         </dependency>
         <dependency>
             <groupId>org.reflections</groupId>

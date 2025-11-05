@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.domain.core.generators;
+package dev.agiro.matriarch.generators;
 
 
 
@@ -9,31 +9,29 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class SetGenerator extends AbstractGenerator<Set<?>> implements MultiGenerator {
+public class ListGenerator extends AbstractGenerator<List<?>> implements MultiGenerator {
 
     private final Map<ClazzGenerators, AbstractGenerator<?>> generators;
 
     @SuppressWarnings("unchecked")
-    public SetGenerator(Map<ClazzGenerators, AbstractGenerator<?>> generators) {
-        super( (Class<Set<?>>) (Class<?>) List.class);
+    public ListGenerator(Map<ClazzGenerators, AbstractGenerator<?>> generators) {
+        super( (Class<List<?>>) (Class<?>) List.class);
         this.generators = generators;
     }
 
 
     @Override
-    public Set<?> generate(Definition supplierInput) {
+    public List<?> generate(Definition supplierInput) {
         try {
             // Check if parametrizedType is available and not null
             if (supplierInput.parametrizedType() == null ||
                 supplierInput.parametrizedType().length == 0 ||
                 supplierInput.parametrizedType()[0] == null) {
-                // Default to empty set if no type information available
-                return java.util.Collections.emptySet();
+                // Default to Object if no type information available
+                return java.util.Collections.emptyList();
             }
             final Class<?> aClass = Class.forName(supplierInput.parametrizedType()[0].getTypeName());
             var generator = generators.get(ClazzGenerators.forClass(aClass));
@@ -47,7 +45,7 @@ public class SetGenerator extends AbstractGenerator<Set<?>> implements MultiGene
                     .mapToObj(i -> generator.apply(new ClassDefinition<>(aClass,
                                                                             supplierInput.overrideValues(),
                                                                             supplierInput.overrideCoordinate() + "[%d]".formatted(i))))
-                    .collect(Collectors.toSet());
+                    .toList();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

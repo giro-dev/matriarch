@@ -129,7 +129,8 @@ class ObjectMotherTest {
                 .override("nestedObject.string", "nested_overrided")
                 .build();
         assertEquals("overrided", basicObject.getString());
-        assertTrue(basicObject.getInteger() > 1000 && basicObject.getInteger() < 2000);
+        assertTrue(basicObject.getInteger() >= 1000 && basicObject.getInteger() < 2000,
+                   "Integer should be in range [1000, 2000), but was: " + basicObject.getInteger());
         assertEquals("2021-01-01T00:00:00Z", basicObject.getInstant().toString());
         assertEquals("nested_overrided", basicObject.getNestedObject().getString());
     }

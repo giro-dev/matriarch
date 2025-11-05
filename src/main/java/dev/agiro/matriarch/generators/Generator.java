@@ -1,9 +1,6 @@
-package dev.agiro.matriarch.domain.core;
+package dev.agiro.matriarch.generators;
 
 
-import dev.agiro.matriarch.domain.core.generators.AbstractGenerator;
-import dev.agiro.matriarch.domain.core.generators.ClazzGenerators;
-import dev.agiro.matriarch.domain.core.generators.MultiGenerator;
 import dev.agiro.matriarch.domain.model.Definition;
 
 import java.util.Arrays;
