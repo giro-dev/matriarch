@@ -3,6 +3,8 @@ package dev.agiro.matriarch.domain.core;
 
 import dev.agiro.matriarch.domain.model.ClassDefinition;
 import dev.agiro.matriarch.domain.model.Overrider;
+import dev.agiro.matriarch.domain.model.TypeReference;
+import dev.agiro.matriarch.domain.model.TypeReferenceDefinition;
 
 import java.util.Map;
 
@@ -26,8 +28,12 @@ public class ObjectMotherGenerator {
 
     }
 
+    public <T> T createObject(TypeReference<T> typeReference, Map<String, Overrider> overrideValues) {
+        return createObject(new TypeReferenceDefinition<>(typeReference, overrideValues, ""));
+    }
 
+    @SuppressWarnings("unchecked")
+    public <T> T createObject(TypeReferenceDefinition<T> typeReferenceDefinition) {
+        return (T) fieldValueSupplier.apply(typeReferenceDefinition);
+    }
 }
-
-
-

@@ -1,7 +1,9 @@
 package dev.agiro.matriarch.domain.core.generators;
 
-
+import dev.agiro.matriarch.domain.core.CircularDependencyDetector;
+import dev.agiro.matriarch.domain.core.ReflectionCache;
 import dev.agiro.matriarch.domain.model.*;
+import dev.agiro.matriarch.exception.MatriarchInstantiationException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -9,7 +11,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -17,13 +18,14 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import dev.agiro.matriarch.exception.MatriarchInstantiationException;
 
 public class GenericObjectGenerator extends AbstractGenerator<Object> implements MultiGenerator {
 
     Logger log = Logger.getLogger(GenericObjectGenerator.class.getName());
 
     private final Map<ClazzGenerators, AbstractGenerator<?>> generators;
+    private final ReflectionCache reflectionCache = ReflectionCache.getInstance();
+    private final CircularDependencyDetector circularDetector = CircularDependencyDetector.getInstance();
 
     public GenericObjectGenerator(Map<ClazzGenerators, AbstractGenerator<?>> generators) {
         super(Object.class);
@@ -34,59 +36,75 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
     public Object generate(Definition classDefinition) {
         final var overrideValues     = classDefinition.overrideValues();
         final var overrideCoordinate = classDefinition.overrideCoordinate();
-        if (overrideValues.containsKey(overrideCoordinate)
-            && Overrider.OverriderType.OBJECT.equals(overrideValues.get(overrideCoordinate).type())) {
-            return secureCast(classDefinition.clazz(),
-                              overrideValues.get(overrideCoordinate).value());
+        final Class<?> clazz = classDefinition.clazz();
+
+        // Check for circular dependencies
+        if (circularDetector.isCircular(clazz)) {
+            log.fine(() -> "Circular dependency detected for class " + clazz.getName() + " at coordinate " + overrideCoordinate);
+            return null; // Break the cycle by returning null
         }
 
-        final var resolvedTypesForInstance = classDefinition.getResolvedGenericTypeMap();
-        final var instance = getInstance(classDefinition, resolvedTypesForInstance);
-        if (instance.getInstance() == null) {
-            return null;
+        if (circularDetector.isMaxDepthExceeded()) {
+            log.warning(() -> "Maximum nesting depth exceeded at coordinate " + overrideCoordinate);
+            return null; // Prevent stack overflow
         }
 
-        // This map will hold the resolution of the current instance's own type parameters.
-        // For example, if instance is Box<String>, this map becomes {T -> String}.
-        Map<TypeVariable<?>, Type> instanceSpecificTypeMap = new HashMap<>();
-        Class<?> instanceClass = instance.getInstance().getClass(); // e.g., Box.class
-        TypeVariable<?>[] typeParameters = instanceClass.getTypeParameters(); // [T for Box]
-
-        // actualTypes are from the Definition of the field/parameter that *led* to this GenericObjectGenerator call
-        // e.g. if a field was `Box<String> myBox`, classDefinition.parametrizedType() would be `[String.class]`
-        Type[] actualTypeArguments = classDefinition.parametrizedType();
-
-        if (typeParameters.length > 0 && actualTypeArguments.length > 0 && typeParameters.length == actualTypeArguments.length) {
-            for (int i = 0; i < typeParameters.length; i++) {
-                instanceSpecificTypeMap.put(typeParameters[i], actualTypeArguments[i]);
+        // Execute generation with circular dependency tracking
+        return circularDetector.executeWithDetection(clazz, () -> {
+            if (overrideValues.containsKey(overrideCoordinate)
+                && Overrider.OverriderType.OBJECT.equals(overrideValues.get(overrideCoordinate).type())) {
+                return secureCast(clazz,
+                                  overrideValues.get(overrideCoordinate).value());
             }
-        }
-        // Important: Merge with types resolved from an outer context, if any.
-        // Outer context takes precedence if there's a name clash, though typically type var names are unique per class.
-        instanceSpecificTypeMap.putAll(resolvedTypesForInstance);
 
+            final var resolvedTypesForInstance = classDefinition.getResolvedGenericTypeMap();
+            final var instance = getInstance(classDefinition, resolvedTypesForInstance);
+            if (instance.getInstance() == null) {
+                return null;
+            }
 
-        final Object finalInstance = instance.getInstance();
-        final InstanceType creationType = instance.getInstanceType(); // Get how it was created
+            // This map will hold the resolution of the current instance's own type parameters.
+            // For example, if instance is Box<String>, this map becomes {T -> String}.
+            Map<TypeVariable<?>, Type> instanceSpecificTypeMap = new HashMap<>();
+            Class<?> instanceClass = instance.getInstance().getClass(); // e.g., Box.class
+            TypeVariable<?>[] typeParameters = instanceClass.getTypeParameters(); // [T for Box]
 
-        resolveFields(finalInstance.getClass())
-            .forEach(field -> {
-                // Construct the full path for the current field to check against overrideValues
-                String fieldOverrideKey = (overrideCoordinate.isEmpty() ? // Use overrideCoordinate from classDefinition
-                                          field.getName() :
-                                          overrideCoordinate + "." + field.getName());
+            // actualTypes are from the Definition of the field/parameter that *led* to this GenericObjectGenerator call
+            // e.g. if a field was `Box<String> myBox`, classDefinition.parametrizedType() would be `[String.class]`
+            Type[] actualTypeArguments = classDefinition.parametrizedType();
 
-                if (creationType != InstanceType.STATIC_METHOD || overrideValues.containsKey(fieldOverrideKey)) {
-                    // If not created by static factory OR if there's an explicit override for this field
-                    setValueToField(finalInstance,
-                                    field,
-                                    overrideValues,
-                                    overrideCoordinate, // base coordinate for current object
-                                    instanceSpecificTypeMap);
+            if (typeParameters.length > 0 && actualTypeArguments.length > 0 && typeParameters.length == actualTypeArguments.length) {
+                for (int i = 0; i < typeParameters.length; i++) {
+                    instanceSpecificTypeMap.put(typeParameters[i], actualTypeArguments[i]);
                 }
-                // Else: (created by static factory AND no explicit override for this field) -> do nothing, preserve factory value.
-            });
-        return finalInstance;
+            }
+            // Important: Merge with types resolved from an outer context, if any.
+            // Outer context takes precedence if there's a name clash, though typically type var names are unique per class.
+            instanceSpecificTypeMap.putAll(resolvedTypesForInstance);
+
+
+            final Object finalInstance = instance.getInstance();
+            final InstanceType creationType = instance.getInstanceType(); // Get how it was created
+
+            resolveFields(finalInstance.getClass())
+                .forEach(field -> {
+                    // Construct the full path for the current field to check against overrideValues
+                    String fieldOverrideKey = (overrideCoordinate.isEmpty() ? // Use overrideCoordinate from classDefinition
+                                              field.getName() :
+                                              overrideCoordinate + "." + field.getName());
+
+                    if (creationType != InstanceType.STATIC_METHOD || overrideValues.containsKey(fieldOverrideKey)) {
+                        // If not created by static factory OR if there's an explicit override for this field
+                        setValueToField(finalInstance,
+                                        field,
+                                        overrideValues,
+                                        overrideCoordinate, // base coordinate for current object
+                                        instanceSpecificTypeMap);
+                    }
+                    // Else: (created by static factory AND no explicit override for this field) -> do nothing, preserve factory value.
+                });
+            return finalInstance;
+        });
     }
 
     private void setValueToField(Object object,
@@ -108,9 +126,8 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
                                                                     resolvedGenericTypeMapFromParent)));
             }
         } catch (Exception e) {
-            final var setter = Arrays.stream(object.getClass().getMethods())
-                    .filter(method -> method.getName().equals("set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1)))
-                    .findFirst();
+            // Use reflection cache for setter method lookup
+            final var setter = reflectionCache.getSetterMethod(object.getClass(), field.getName());
 
             if (setter.isPresent()) {
                 try {
@@ -134,15 +151,7 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
     }
 
     private List<Field> resolveFields(Class<?> aClass) {
-        final List<Field> allFields = new ArrayList<>();
-        Class<?> currentClass = aClass;
-        while (currentClass != null && currentClass != Object.class) {
-            allFields.addAll(Arrays.asList(Arrays.stream(currentClass.getDeclaredFields())
-                                                  .filter(field -> !Modifier.isStatic(field.getModifiers()))
-                                                  .toArray(Field[]::new)));
-            currentClass = currentClass.getSuperclass();
-        }
-        return allFields;
+        return reflectionCache.getFields(aClass);
     }
 
     // This map is for resolving type variables that might appear in constructor parameters,
@@ -152,11 +161,8 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
         final String overrideCoordinate = classDefinition.overrideCoordinate();
 
         // Attempt to find and use a suitable public static factory method first
-        List<java.lang.reflect.Method> staticFactoryMethods = Arrays.stream(clazz.getDeclaredMethods())
-                .filter(method -> Modifier.isStatic(method.getModifiers()) &&
-                                   Modifier.isPublic(method.getModifiers()) &&
-                                   clazz.isAssignableFrom(method.getReturnType()))
-                .toList();
+        // Use reflection cache for better performance
+        List<java.lang.reflect.Method> staticFactoryMethods = reflectionCache.getStaticFactoryMethods(clazz);
 
         // Prioritize no-arg static factory methods
         java.lang.reflect.Method noArgStaticFactory = staticFactoryMethods.stream()
@@ -178,7 +184,8 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
         // TODO: Extend to handle static factory methods with parameters Matriarch can satisfy.
 
         // Fallback to constructor logic
-        final Map<List<Parameter>, Constructor<?>> constructors = Arrays.stream(clazz.getDeclaredConstructors())
+        // Use reflection cache for better performance
+        final Map<List<Parameter>, Constructor<?>> constructors = reflectionCache.getConstructors(clazz).stream()
                 .collect(Collectors.toMap(
                         c -> List.of(c.getParameters()),
                         c -> c));

@@ -18,5 +18,6 @@ public record ClassDefinition<T>(Class<T> aClass,
         if (genericType instanceof java.lang.reflect.ParameterizedType parameterizedType) {
             return parameterizedType.getActualTypeArguments();
         }
-        return new Type[]{genericType};    }
+        return new Type[]{};
+    }
 }

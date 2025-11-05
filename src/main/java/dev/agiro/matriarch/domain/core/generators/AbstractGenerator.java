@@ -80,6 +80,13 @@ public abstract class AbstractGenerator<T> implements Function<Definition, T> {
 
     @Override
     public T apply(Definition supplierInput){
+            // Check if there's an explicit NULL override first
+            if (supplierInput.overrideValues().containsKey(supplierInput.overrideCoordinate())) {
+                final var overrider = supplierInput.overrideValues().get(supplierInput.overrideCoordinate());
+                if (overrider.type() == dev.agiro.matriarch.domain.model.Overrider.OverriderType.NULL) {
+                    return null;
+                }
+            }
             return override.apply(supplierInput).orElse(generate(supplierInput));
     }
 
