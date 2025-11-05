@@ -51,10 +51,15 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
 
         // Execute generation with circular dependency tracking
         return circularDetector.executeWithDetection(clazz, () -> {
-            if (overrideValues.containsKey(overrideCoordinate)
-                && Overrider.OverriderType.OBJECT.equals(overrideValues.get(overrideCoordinate).type())) {
-                return secureCast(clazz,
-                                  overrideValues.get(overrideCoordinate).value());
+            if (overrideValues.containsKey(overrideCoordinate)) {
+                Overrider overrider = overrideValues.get(overrideCoordinate);
+                if (Overrider.OverriderType.OBJECT.equals(overrider.type())) {
+                    return secureCast(clazz, overrider.value());
+                } else if (Overrider.OverriderType.SUPPLIER.equals(overrider.type())) {
+                    @SuppressWarnings("unchecked")
+                    java.util.function.Supplier<Object> supplier = (java.util.function.Supplier<Object>) overrider.value();
+                    return secureCast(clazz, supplier.get());
+                }
             }
 
             final var resolvedTypesForInstance = classDefinition.getResolvedGenericTypeMap();

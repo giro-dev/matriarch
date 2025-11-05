@@ -56,14 +56,17 @@ class EnhancedBuilderTest {
     @Test
     void testForFieldWithCustomGenerator() {
         // Test custom field generator
+        LocalDate localDate = LocalDate.of(1998, 1, 1);
         User user = Mother.forClass(User.class)
                 .forField("email", () -> "custom@example.com")
                 .forField("age", () -> 25)
+                .forType(LocalDate.class, () -> localDate)
                 .build();
 
         assertNotNull(user);
         assertEquals("custom@example.com", user.getEmail());
         assertEquals(25, user.getAge());
+        assertEquals(localDate, user.getBirthDate());
     }
 
     @Test

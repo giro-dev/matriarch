@@ -108,7 +108,7 @@ public class Mother<M> {
          * Usage: .forField("email", () -> faker.internet().emailAddress())
          */
         public Builder<R> forField(String fieldName, Supplier<?> generator) {
-            this.overrides.put(fieldName, Overrider.object(generator.get()));
+            this.overrides.put(fieldName, Overrider.supplier(generator));
             return this;
         }
 
@@ -152,10 +152,16 @@ public class Mother<M> {
          * Build the object with the configured overrides.
          */
         public R build() {
-            // Apply type overrides
-            for (Map.Entry<Class<?>, Supplier<?>> entry : typeOverrides.entrySet()) {
-                // This is a simplified implementation
-                // TODO: Integrate with the generator to apply type-level overrides
+            // Apply excluded fields as null overrides
+            for (String excludedField : excludedFields) {
+                if (!overrides.containsKey(excludedField)) {
+                    overrides.put(excludedField, Overrider.nullValue());
+                }
+            }
+
+            // Apply type overrides by finding all fields of matching types
+            if (!typeOverrides.isEmpty()) {
+                applyTypeOverrides(mother.clazz, "");
             }
 
             // If TypeReference was used, pass it to the generator for proper generic handling
@@ -168,10 +174,88 @@ public class Mother<M> {
         }
 
         /**
+         * Recursively apply type overrides to all fields of matching types.
+         */
+        private void applyTypeOverrides(Class<?> clazz, String prefix) {
+            if (clazz == null || clazz == Object.class) {
+                return;
+            }
+
+            for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+                String fieldPath = prefix.isEmpty() ? field.getName() : prefix + "." + field.getName();
+
+                // Skip if this field already has an explicit override
+                if (overrides.containsKey(fieldPath)) {
+                    continue;
+                }
+
+                // Check if any type override matches this field's type
+                for (Map.Entry<Class<?>, Supplier<?>> typeOverride : typeOverrides.entrySet()) {
+                    if (typeOverride.getKey().isAssignableFrom(field.getType())) {
+                        overrides.put(fieldPath, Overrider.supplier(typeOverride.getValue()));
+                        break;
+                    }
+                }
+            }
+
+            // Recurse to superclass
+            applyTypeOverrides(clazz.getSuperclass(), prefix);
+        }
+
+        /**
          * Alias for build() - more semantic name for object creation.
          */
         public R birth() {
             return build();
+        }
+
+        /**
+         * Generate multiple objects and return as a List.
+         * Usage: .buildList(10)
+         */
+        public java.util.List<R> buildList(int count) {
+            if (count < 0) {
+                throw new IllegalArgumentException("Count must be non-negative: " + count);
+            }
+            java.util.List<R> result = new java.util.ArrayList<>(count);
+            for (int i = 0; i < count; i++) {
+                result.add(build());
+            }
+            return result;
+        }
+
+        /**
+         * Generate multiple objects and return as a Set.
+         * Usage: .buildSet(10)
+         */
+        public java.util.Set<R> buildSet(int count) {
+            if (count < 0) {
+                throw new IllegalArgumentException("Count must be non-negative: " + count);
+            }
+            java.util.Set<R> result = new java.util.HashSet<>(count);
+            for (int i = 0; i < count; i++) {
+                result.add(build());
+            }
+            return result;
+        }
+
+        /**
+         * Generate multiple objects and return as a Stream.
+         * Usage: .buildStream(10)
+         */
+        public java.util.stream.Stream<R> buildStream(int count) {
+            if (count < 0) {
+                throw new IllegalArgumentException("Count must be non-negative: " + count);
+            }
+            return java.util.stream.Stream.generate(this::build).limit(count);
+        }
+
+        /**
+         * Generate an infinite Stream of objects.
+         * Usage: .buildStream().limit(10)
+         */
+        public java.util.stream.Stream<R> buildStream() {
+            return java.util.stream.Stream.generate(this::build);
         }
 
         /**

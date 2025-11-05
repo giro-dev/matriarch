@@ -47,6 +47,18 @@ public abstract class AbstractGenerator<T> implements Function<Definition, T> {
                 case NULL -> {
                     return Optional.empty();
                 }
+                case SUPPLIER -> {
+                    @SuppressWarnings("unchecked")
+                    Supplier<Object> supplier = (Supplier<Object>) overrider.value();
+                    Object suppliedValue = supplier.get();
+                    if (suppliedValue == null) {
+                        return Optional.empty();
+                    }
+                    if (suppliedValue.getClass().equals(input.clazz()) || getClazz().isInstance(suppliedValue)) {
+                        return Optional.of(getClazz().cast(suppliedValue));
+                    }
+                    return Optional.of(getClazz().cast(objectMapper.convertValue(suppliedValue, input.clazz())));
+                }
                 case OBJECT, STRING -> {
                     if (overrider.value().getClass().equals(input.clazz())) {
                         return Optional.of(getClazz().cast(overrider.value()));
