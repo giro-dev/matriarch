@@ -146,7 +146,7 @@ public class Mother<M> {
         /**
          * Set the size range for generated collections (Lists, Sets).
          * Usage: .withCollectionSize(5, 10)
-         * Note: This is stored for future use but not yet implemented in the generator.
+         * Note: The configuration is stored, but currently not applied during object generation.
          */
         public Builder<R> withCollectionSize(int min, int max) {
             if (min < 0 || max < min) {
