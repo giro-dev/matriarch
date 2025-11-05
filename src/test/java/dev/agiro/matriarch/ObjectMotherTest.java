@@ -1,6 +1,7 @@
 package dev.agiro.matriarch;
 
 import dev.agiro.matriarch.domain.core.Mother;
+import dev.agiro.matriarch.domain.core.Regex;
 import dev.agiro.matriarch.object_samples.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -123,7 +124,7 @@ class ObjectMotherTest {
     void test_override_with_builder_parameters() {
         AllArgsConstructorBasicObjectAllTypes basicObject = Mother.forClass(AllArgsConstructorBasicObjectAllTypes.class)
                 .override("string", "overrided")
-                .override("integer", new Mother.Regex("1[0-9]{3}"))
+                .override("integer", new Regex("1[0-9]{3}"))
                 .override("instant", "2021-01-01T00:00:00Z")
                 .override("nestedObject.string", "nested_overrided")
                 .build();

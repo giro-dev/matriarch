@@ -3,10 +3,9 @@ package dev.agiro.matriarch.domain.core;
 import dev.agiro.matriarch.domain.model.Overrider;
 import dev.agiro.matriarch.domain.model.TypeReference;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 public class Mother<M> {
@@ -37,29 +36,43 @@ public class Mother<M> {
     }
 
     public static class Builder<R> {
-        private final Map<String, Overrider> overrides = new HashMap<>();
-        private final Map<Class<?>, Supplier<?>> typeOverrides = new HashMap<>();
-        private final Set<String> excludedFields = new HashSet<>();
         private final Mother<R> mother;
-        private Integer collectionSizeMin = 1;
-        private Integer collectionSizeMax = 15;
+        private final BuilderConfiguration<R> config;
+        private final List<OverrideStrategy> strategies;
+        private final CollectionGenerator<R> collectionGenerator;
         private final TypeReference<R> typeReference;
 
         public Builder(Class<R> clazz) {
             this.mother = new Mother<>(clazz);
+            this.config = new BuilderConfiguration<>();
+            this.strategies = new ArrayList<>();
+            this.collectionGenerator = new CollectionGenerator<>(this::build);
             this.typeReference = null;
+            initializeStrategies();
         }
 
         public Builder(TypeReference<R> typeRef) {
             this.mother = new Mother<>(typeRef.getRawType());
+            this.config = new BuilderConfiguration<>();
+            this.strategies = new ArrayList<>();
+            this.collectionGenerator = new CollectionGenerator<>(this::build);
             this.typeReference = typeRef;
+            initializeStrategies();
+        }
+
+        /**
+         * Initialize the override strategies that will be applied during build.
+         */
+        private void initializeStrategies() {
+            strategies.add(new ExcludedFieldsStrategy());
+            strategies.add(new TypeOverrideStrategy());
         }
 
         /**
          * Override a specific field with a value.
          */
         public Builder<R> override(String key, Overrider value) {
-            this.overrides.put(key, value);
+            config.addOverride(key, value);
             return this;
         }
 
@@ -67,7 +80,7 @@ public class Mother<M> {
          * Override a specific field with a string value.
          */
         public Builder<R> override(String key, String value) {
-            this.overrides.put(key, null == value ? Overrider.nullValue() : Overrider.with(value));
+            config.addOverride(key, value == null ? Overrider.nullValue() : Overrider.with(value));
             return this;
         }
 
@@ -75,7 +88,7 @@ public class Mother<M> {
          * Override a specific field with a regex pattern.
          */
         public Builder<R> override(String key, Regex value) {
-            this.overrides.put(key, null == value ? Overrider.nullValue() : Overrider.regex(value.value()));
+            config.addOverride(key, value == null ? Overrider.nullValue() : Overrider.regex(value.value()));
             return this;
         }
 
@@ -83,7 +96,7 @@ public class Mother<M> {
          * Override a specific field with an object value.
          */
         public Builder<R> override(String key, Object value) {
-            this.overrides.put(key, null == value ? Overrider.nullValue() : Overrider.object(value));
+            config.addOverride(key, value == null ? Overrider.nullValue() : Overrider.object(value));
             return this;
         }
 
@@ -92,13 +105,13 @@ public class Mother<M> {
          */
         public Builder<R> override(String key, Object object, Overrider.OverriderType type) {
             if (object == null) {
-                this.overrides.put(key, Overrider.nullValue());
+                config.addOverride(key, Overrider.nullValue());
                 return this;
             }
             switch (type) {
-                case STRING -> this.overrides.put(key, Overrider.with((String) object));
-                case REGEX -> this.overrides.put(key, Overrider.regex((String) object));
-                default -> this.overrides.put(key, Overrider.object(object));
+                case STRING -> config.addOverride(key, Overrider.with((String) object));
+                case REGEX -> config.addOverride(key, Overrider.regex((String) object));
+                default -> config.addOverride(key, Overrider.object(object));
             }
             return this;
         }
@@ -108,7 +121,7 @@ public class Mother<M> {
          * Usage: .forField("email", () -> faker.internet().emailAddress())
          */
         public Builder<R> forField(String fieldName, Supplier<?> generator) {
-            this.overrides.put(fieldName, Overrider.supplier(generator));
+            config.addOverride(fieldName, Overrider.supplier(generator));
             return this;
         }
 
@@ -117,7 +130,7 @@ public class Mother<M> {
          * Usage: .forType(LocalDate.class, () -> LocalDate.now().minusDays(random.nextInt(365)))
          */
         public <T> Builder<R> forType(Class<T> type, Supplier<T> generator) {
-            this.typeOverrides.put(type, generator);
+            config.addTypeOverride(type, generator);
             return this;
         }
 
@@ -126,25 +139,21 @@ public class Mother<M> {
          * Usage: .excludeFields("password", "internalId")
          */
         public Builder<R> excludeFields(String... fields) {
-            this.excludedFields.addAll(Set.of(fields));
-            // Set excluded fields to null
-            for (String field : fields) {
-                this.overrides.put(field, Overrider.nullValue());
-            }
+            config.addExcludedFields(fields);
             return this;
         }
 
         /**
          * Set the size range for generated collections (Lists, Sets).
          * Usage: .withCollectionSize(5, 10)
+         * Note: This is stored for future use but not yet implemented in the generator.
          */
         public Builder<R> withCollectionSize(int min, int max) {
             if (min < 0 || max < min) {
                 throw new IllegalArgumentException("Invalid collection size range: min=" + min + ", max=" + max);
             }
-            this.collectionSizeMin = min;
-            this.collectionSizeMax = max;
-            // TODO: Pass these values to the generator
+            config.setCollectionSizeMin(min);
+            config.setCollectionSizeMax(max);
             return this;
         }
 
@@ -152,54 +161,16 @@ public class Mother<M> {
          * Build the object with the configured overrides.
          */
         public R build() {
-            // Apply excluded fields as null overrides
-            for (String excludedField : excludedFields) {
-                if (!overrides.containsKey(excludedField)) {
-                    overrides.put(excludedField, Overrider.nullValue());
-                }
-            }
-
-            // Apply type overrides by finding all fields of matching types
-            if (!typeOverrides.isEmpty()) {
-                applyTypeOverrides(mother.clazz, "");
-            }
+            // Apply all override strategies
+            strategies.forEach(strategy -> strategy.applyOverrides(config, mother.clazz));
 
             // If TypeReference was used, pass it to the generator for proper generic handling
             if (typeReference != null) {
                 ObjectMotherGenerator generator = new ObjectMotherGenerator();
-                return generator.createObject(typeReference, overrides);
+                return generator.createObject(typeReference, config.getOverrides());
             }
 
-            return mother.create(overrides);
-        }
-
-        /**
-         * Recursively apply type overrides to all fields of matching types.
-         */
-        private void applyTypeOverrides(Class<?> clazz, String prefix) {
-            if (clazz == null || clazz == Object.class) {
-                return;
-            }
-
-            for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
-                String fieldPath = prefix.isEmpty() ? field.getName() : prefix + "." + field.getName();
-
-                // Skip if this field already has an explicit override
-                if (overrides.containsKey(fieldPath)) {
-                    continue;
-                }
-
-                // Check if any type override matches this field's type
-                for (Map.Entry<Class<?>, Supplier<?>> typeOverride : typeOverrides.entrySet()) {
-                    if (typeOverride.getKey().isAssignableFrom(field.getType())) {
-                        overrides.put(fieldPath, Overrider.supplier(typeOverride.getValue()));
-                        break;
-                    }
-                }
-            }
-
-            // Recurse to superclass
-            applyTypeOverrides(clazz.getSuperclass(), prefix);
+            return mother.create(config.getOverrides());
         }
 
         /**
@@ -214,14 +185,7 @@ public class Mother<M> {
          * Usage: .buildList(10)
          */
         public java.util.List<R> buildList(int count) {
-            if (count < 0) {
-                throw new IllegalArgumentException("Count must be non-negative: " + count);
-            }
-            java.util.List<R> result = new java.util.ArrayList<>(count);
-            for (int i = 0; i < count; i++) {
-                result.add(build());
-            }
-            return result;
+            return collectionGenerator.generateList(count);
         }
 
         /**
@@ -229,14 +193,7 @@ public class Mother<M> {
          * Usage: .buildSet(10)
          */
         public java.util.Set<R> buildSet(int count) {
-            if (count < 0) {
-                throw new IllegalArgumentException("Count must be non-negative: " + count);
-            }
-            java.util.Set<R> result = new java.util.HashSet<>(count);
-            for (int i = 0; i < count; i++) {
-                result.add(build());
-            }
-            return result;
+            return collectionGenerator.generateSet(count);
         }
 
         /**
@@ -244,10 +201,7 @@ public class Mother<M> {
          * Usage: .buildStream(10)
          */
         public java.util.stream.Stream<R> buildStream(int count) {
-            if (count < 0) {
-                throw new IllegalArgumentException("Count must be non-negative: " + count);
-            }
-            return java.util.stream.Stream.generate(this::build).limit(count);
+            return collectionGenerator.generateStream(count);
         }
 
         /**
@@ -255,21 +209,18 @@ public class Mother<M> {
          * Usage: .buildStream().limit(10)
          */
         public java.util.stream.Stream<R> buildStream() {
-            return java.util.stream.Stream.generate(this::build);
+            return collectionGenerator.generateInfiniteStream();
         }
 
         /**
          * Get the collection size range.
          */
         public int getCollectionSizeMin() {
-            return collectionSizeMin;
+            return config.getCollectionSizeMin();
         }
 
         public int getCollectionSizeMax() {
-            return collectionSizeMax;
+            return config.getCollectionSizeMax();
         }
-    }
-
-    public record Regex(String value) {
     }
 }
