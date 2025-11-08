@@ -46,6 +46,11 @@ Order order = Mother.forClass(Order.class)
     .forType(BigDecimal.class, () -> BigDecimal.valueOf(random.nextDouble() * 1000))
     .build();
 
+// Collections and stream generation
+List<User>     list = Mother.forClass(User.class).buildList(10);
+Set<User>       set = Mother.forClass(User.class).buildSet(10);
+Stream<User> stream = Mother.forClass(User.class).buildStream(10);
+
 // Use in parameterized tests
 @ParameterizedTest
 @MotherFactoryResource(args = {

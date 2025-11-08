@@ -194,6 +194,20 @@ public class Mother<M> {
         }
 
         /**
+         * Set the size range for generated collections (Lists, Sets).
+         * Usage: .withCollectionSize(5, 10)
+         * Note: The configuration is stored, but currently not applied during object generation.
+         */
+        public Builder<R> withCollectionSize(int size) {
+            if (size < 0 ) {
+                throw new IllegalArgumentException("Invalid collection size: min=0");
+            }
+            config.setCollectionSizeMin(size);
+            config.setCollectionSizeMax(size);
+            return this;
+        }
+
+        /**
          * Build the object with the configured overrides.
          */
         public R build() {

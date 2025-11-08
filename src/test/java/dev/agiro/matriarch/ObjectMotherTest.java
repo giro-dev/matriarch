@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -134,4 +137,33 @@ class ObjectMotherTest {
         assertEquals("2021-01-01T00:00:00Z", basicObject.getInstant().toString());
         assertEquals("nested_overrided", basicObject.getNestedObject().getString());
     }
+
+    @DisplayName("Should generate lists of a given size")
+    @Test
+    void test_generate_lists_of_given_size() {
+        List<AllArgsConstructorBasicObjectAllTypes> basicObject = Mother.forClass(AllArgsConstructorBasicObjectAllTypes.class)
+                .buildList(10);
+        assertEquals(10, basicObject.size());
+    }
+
+
+    @DisplayName("Should generate set of a given size")
+    @Test
+    void test_generate_set_of_given_size() {
+        Set<AllArgsConstructorBasicObjectAllTypes> basicObject = Mother.forClass(AllArgsConstructorBasicObjectAllTypes.class)
+                .buildSet(10);
+        assertEquals(10, basicObject.size());
+    }
+
+
+
+    @DisplayName("Should generate set of a given size")
+    @Test
+    void test_generate_stream_of_given_size() {
+        Stream<AllArgsConstructorBasicObjectAllTypes> basicObject = Mother.forClass(AllArgsConstructorBasicObjectAllTypes.class)
+                .buildStream(10);
+        assertEquals(10, basicObject.count());
+    }
+
+
 }
