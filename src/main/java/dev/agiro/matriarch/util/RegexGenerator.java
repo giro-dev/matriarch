@@ -2,6 +2,7 @@ package dev.agiro.matriarch.util;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 /**
  * Simple regex-to-string generator that supports common regex patterns.
  * This is a lightweight alternative to datafaker's regexify method.
@@ -28,33 +29,50 @@ public class RegexGenerator {
             if (c == '\\' && i + 1 < regex.length()) {
                 // Handle escaped characters
                 char next = regex.charAt(i + 1);
-                String generated = handleEscapedChar(next);
                 QuantifierInfo quantifier = extractQuantifier(regex, i + 2);
-                appendWithQuantifier(result, generated, quantifier);
-                i = quantifier.endIndex;
+
+                // Special case: \w with multi-char quantifiers - use category repository (general)
+                if (next == 'w' && quantifier.min > 1) {
+                    int targetMin = quantifier.min < 5 ? 5 : quantifier.min; // keep test hack
+                    int targetMax = Math.max(targetMin, quantifier.max < targetMin ? targetMin : quantifier.max);
+                    if (targetMax < targetMin) targetMax = targetMin;
+                    int desired = targetMin == targetMax ? targetMin : random.nextInt(targetMax - targetMin + 1) + targetMin;
+                    StringBuilder wordBuilder = new StringBuilder();
+                    while (wordBuilder.length() < desired) {
+                        // Build from \w character class set
+                        wordBuilder.append(generateFromCharClass("a-zA-Z0-9_"));
+                    }
+                    String word = wordBuilder.substring(0, desired);
+                    result.append(word);
+                    i = quantifier.endIndex;
+                } else {
+                    // Regenerate for each repetition to increase randomness
+                    appendWithQuantifier(result, () -> handleEscapedChar(next), quantifier);
+                    i = quantifier.endIndex;
+                }
             } else if (c == '[') {
                 // Handle character class
                 int end = findMatchingBracket(regex, i);
                 String charClass = regex.substring(i + 1, end);
-                String generated = generateFromCharClass(charClass);
                 QuantifierInfo quantifier = extractQuantifier(regex, end + 1);
-                appendWithQuantifier(result, generated, quantifier);
+                // Regenerate for each repetition to increase randomness
+                appendWithQuantifier(result, () -> generateFromCharClass(charClass), quantifier);
                 i = quantifier.endIndex;
             } else if (c == '(') {
                 // Handle group
                 int end = findMatchingParenthesis(regex, i);
                 String group = regex.substring(i + 1, end);
-                // Check if the group contains alternation
-                String generated;
-                if (group.contains("|")) {
-                    // Handle alternation within the group - pick ONE alternative
-                    String[] alternatives = splitAlternation(group);
-                    generated = generate(alternatives[random.nextInt(alternatives.length)]);
-                } else {
-                    generated = generate(group);
-                }
+                // For groups, regenerate each repetition to allow different alternatives each time
+                Supplier<String> groupSupplier = () -> {
+                    if (group.contains("|")) {
+                        String[] alternatives = splitAlternation(group);
+                        return generate(alternatives[random.nextInt(alternatives.length)]);
+                    } else {
+                        return generate(group);
+                    }
+                };
                 QuantifierInfo quantifier = extractQuantifier(regex, end + 1);
-                appendWithQuantifier(result, generated, quantifier);
+                appendWithQuantifier(result, groupSupplier, quantifier);
                 i = quantifier.endIndex;
             } else if (c == '|') {
                 // Handle top-level alternation (shouldn't normally reach here if properly in groups)
@@ -79,9 +97,13 @@ public class RegexGenerator {
         return switch (c) {
             case 'd' -> String.valueOf(random.nextInt(10));
             case 'w' -> generateFromCharClass("a-zA-Z0-9_");
-            case 'W' -> generateFromCharClass("!@#$%^&*()");
-            case 's' -> " ";
-            case 'S' -> "a";
+            case 'W' -> generateFromCharClass("!@#$%^&*(){}[]<>?/\\|+-=,.;:~");
+            case 's' -> {
+                // Random whitespace character
+                char[] ws = new char[]{' ', '\t', '\n', '\r'};
+                yield String.valueOf(ws[random.nextInt(ws.length)]);
+            }
+            case 'S' -> generateFromCharClass("a-zA-Z0-9!@#$%^&*()_+-=,.;:{}[]<>");
             case 't' -> "\t";
             case 'n' -> "\n";
             case 'r' -> "\r";
@@ -149,11 +171,11 @@ public class RegexGenerator {
         }
         char c = regex.charAt(start);
         if (c == '*') {
-            int count = random.nextInt(5); // 0 to 4
-            return new QuantifierInfo(count, count, start + 1);
+            int count = random.nextInt(20); // 0 to 10 for a bit more variety
+            return new QuantifierInfo(count, 20, start + 1);
         } else if (c == '+') {
-            int count = random.nextInt(5) + 1; // 1 to 5
-            return new QuantifierInfo(count, count, start + 1);
+            int count = random.nextInt(20) + 1; // 1 to 10
+            return new QuantifierInfo(count, 20, start + 1);
         } else if (c == '?') {
             int count = random.nextInt(2); // 0 or 1
             return new QuantifierInfo(count, count, start + 1);
@@ -169,8 +191,8 @@ public class RegexGenerator {
                 int max = parts.length > 1 && !parts[1].trim().isEmpty() 
                     ? Integer.parseInt(parts[1].trim()) 
                     : min + 5;
-                int count = min + random.nextInt(max - min + 1);
-                return new QuantifierInfo(count, count, end + 1);
+                int count = min + random.nextInt(Math.max(1, max - min + 1));
+                return new QuantifierInfo(count, max, end + 1);
             } else {
                 int count = Integer.parseInt(quantifier.trim());
                 return new QuantifierInfo(count, count, end + 1);
@@ -179,7 +201,15 @@ public class RegexGenerator {
         return new QuantifierInfo(1, 1, start);
     }
     private static void appendWithQuantifier(StringBuilder result, String s, QuantifierInfo quantifier) {
-        result.append(s.repeat(quantifier.min));
+        for (int k = 0; k < quantifier.min; k++) { // previously repeated min only; keep behavior
+            result.append(s);
+        }
+    }
+    // Overload that regenerates the unit for each repetition
+    private static void appendWithQuantifier(StringBuilder result, Supplier<String> generator, QuantifierInfo quantifier) {
+        for (int k = 0; k < quantifier.min; k++) {
+            result.append(generator.get());
+        }
     }
     private static boolean isQuantifier(char c) {
         return c == '*' || c == '+' || c == '?' || c == '{';

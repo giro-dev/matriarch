@@ -1,4 +1,7 @@
 patterns:
+  - coordinate: "knownInteger"
+    value: "666"
+    type: "string"
   - coordinate: "plantId"
     value: "\\d{4}"        # Matches the assertion in the test
     type: "regex"

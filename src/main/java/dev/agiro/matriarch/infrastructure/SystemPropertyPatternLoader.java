@@ -39,7 +39,7 @@ public class SystemPropertyPatternLoader implements PatternLoader {
         }
 
         if (!patterns.isEmpty()) {
-            logger.log(Level.INFO, "Loaded {0} patterns from system properties", patterns.size());
+            logger.log(Level.FINE, "Loaded {0} patterns from system properties", patterns.size());
         }
 
         return patterns;

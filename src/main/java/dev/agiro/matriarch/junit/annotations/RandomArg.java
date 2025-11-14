@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.parametrized_test_source.annotations;
+package dev.agiro.matriarch.junit.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,4 +1,4 @@
-package dev.agiro.matriarch.exception;
+package dev.agiro.matriarch.domain.exception;
 
 public class MatriarchInstantiationException extends RuntimeException {
     public MatriarchInstantiationException(String message) {

@@ -1,7 +1,7 @@
-package dev.agiro.matriarch.parametrized_test_source.annotations;
+package dev.agiro.matriarch.junit.annotations;
 
 
-import dev.agiro.matriarch.parametrized_test_source.MotherFactoryResourceProviders;
+import dev.agiro.matriarch.junit.MotherFactoryResourceProviders;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import java.lang.annotation.ElementType;

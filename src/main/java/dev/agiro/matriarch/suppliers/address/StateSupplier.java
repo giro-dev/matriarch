@@ -1,0 +1,50 @@
+package dev.agiro.matriarch.suppliers.address;
+
+import dev.agiro.matriarch.suppliers.base.RandomSupplier;
+
+/**
+ * Supplier that generates random state/region/province names.
+ * Includes US states, German states (Bundesländer), and Spanish provinces.
+ */
+public class StateSupplier extends RandomSupplier<String> {
+
+
+    // US States
+    private static final String[] US_STATES = {
+            "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+            "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+            "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
+            "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
+            "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+            "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+            "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+            "Wisconsin", "Wyoming"
+    };
+
+    // German States (Bundesländer)
+    private static final String[] GERMAN_STATES = {
+            "Baden-Württemberg", "Bayern", "Berlin", "Brandenburg", "Bremen", "Hamburg",
+            "Hessen", "Mecklenburg-Vorpommern", "Niedersachsen", "Nordrhein-Westfalen",
+            "Rheinland-Pfalz", "Saarland", "Sachsen", "Sachsen-Anhalt", "Schleswig-Holstein", "Thüringen"
+    };
+
+    // Spanish Provinces
+    private static final String[] SPANISH_PROVINCES = {
+            "Álava", "Albacete", "Alicante", "Almería", "Asturias", "Ávila", "Badajoz",
+            "Baleares", "Barcelona", "Burgos", "Cáceres", "Cádiz", "Cantabria", "Castellón",
+            "Ciudad Real", "Córdoba", "Cuenca", "Girona", "Granada", "Guadalajara", "Guipúzcoa",
+            "Huelva", "Huesca", "Jaén", "La Coruña", "La Rioja", "Las Palmas", "León", "Lérida",
+            "Lugo", "Madrid", "Málaga", "Murcia", "Navarra", "Orense", "Palencia", "Pontevedra",
+            "Salamanca", "Santa Cruz de Tenerife", "Segovia", "Sevilla", "Soria", "Tarragona",
+            "Teruel", "Toledo", "Valencia", "Valladolid", "Vizcaya", "Zamora", "Zaragoza"
+    };
+
+    private static final String[][] ALL_STATES = {US_STATES, GERMAN_STATES, SPANISH_PROVINCES};
+
+    @Override
+    public String get() {
+        String[] selectedRegion = randomElement(ALL_STATES);
+        return randomElement(selectedRegion);
+    }
+}
+
