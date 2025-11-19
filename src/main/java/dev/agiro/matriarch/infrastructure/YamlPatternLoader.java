@@ -44,7 +44,7 @@ public class YamlPatternLoader implements PatternLoader {
                 return new ArrayList<>();
             }
 
-            logger.log(Level.INFO, "Loaded {0} patterns from {1}",
+            logger.log(Level.FINE, "Loaded {0} patterns from {1}",
                     new Object[]{knownPatterns.getPatterns().size(), resourcePath});
             return new ArrayList<>(knownPatterns.getPatterns());
 

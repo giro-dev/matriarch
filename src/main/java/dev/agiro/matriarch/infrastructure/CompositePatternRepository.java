@@ -67,7 +67,7 @@ public class CompositePatternRepository implements PatternRepository {
         }
 
         List<Pattern> allPatterns = new ArrayList<>(patternMap.values());
-        logger.log(Level.INFO, "Total patterns loaded: {0}", allPatterns.size());
+        logger.log(Level.FINE, "Total patterns loaded: {0}", allPatterns.size());
 
         return new KnownPatterns(allPatterns);
     }
@@ -87,7 +87,7 @@ public class CompositePatternRepository implements PatternRepository {
     @Override
     public void reload() {
         synchronized (lock) {
-            logger.log(Level.INFO, "Reloading patterns from all sources");
+            logger.log(Level.FINE, "Reloading patterns from all sources");
             cachedPatterns = loadPatterns();
         }
     }

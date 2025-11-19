@@ -1,0 +1,157 @@
+package dev.agiro.matriarch;
+
+import dev.agiro.matriarch.domain.model.Overrider;
+import dev.agiro.matriarch.object_samples.AllArgsConstructorBasicObjectBasicTypes;
+import dev.agiro.matriarch.junit.annotations.MotherFactoryResource;
+import dev.agiro.matriarch.junit.annotations.OverrideField;
+import dev.agiro.matriarch.junit.annotations.RandomArg;
+import org.junit.jupiter.params.ParameterizedTest;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Example test demonstrating the usage of @MotherFactoryResource for parameterized tests.
+ * These are working examples showing various ways to use the Mother factory for test data generation.
+ */
+class ParameterizedMotherExampleTest {
+
+    @ParameterizedTest(name = "[{index}] Simple Random Object")
+    @MotherFactoryResource(args = {
+            @RandomArg(targetClass = AllArgsConstructorBasicObjectBasicTypes.class)
+    })
+    void testWithSimpleRandomObject(AllArgsConstructorBasicObjectBasicTypes obj) {
+        assertNotNull(obj);
+        assertNotNull(obj.getString());
+        assertNotNull(obj.getInteger());
+    }
+
+    @ParameterizedTest(name = "[{index}] Test with named cases")
+    @MotherFactoryResource(args = {
+            @RandomArg(
+                    name = "Valid Email User",
+                    targetClass = AllArgsConstructorBasicObjectBasicTypes.class,
+                    overrides = {
+                            @OverrideField(field = "charcharacter", value = "a"),
+                            @OverrideField(field = "string", value = "valid@example.com")
+                    }
+            ),
+            @RandomArg(
+                    name = "User with Specific Integer",
+                    targetClass = AllArgsConstructorBasicObjectBasicTypes.class,
+                    overrides = {
+                            @OverrideField(field = "character", value = "b"),
+                            @OverrideField(field = "integer", value = "42", type = Overrider.OverriderType.OBJECT)
+                    }
+            ),
+            @RandomArg(
+                    name = "User with Regex Email",
+                    targetClass = AllArgsConstructorBasicObjectBasicTypes.class,
+                    overrides = {
+                            @OverrideField(field = "character", value = "c"),
+                            @OverrideField(field = "string", value = "[a-z]{5,8}@test.com", isRegex = true)
+                    }
+            )
+    })
+    void testWithMultipleNamedCases(AllArgsConstructorBasicObjectBasicTypes obj) {
+        assertNotNull(obj);
+        assertNotNull(obj.getString());
+        // For the first case, check the email
+        if (obj.getCharacter().equals('a')) {
+            assertEquals("valid@example.com", obj.getString());
+        }
+        // For the second case, check the integer
+        if (obj.getCharacter().equals('b')) {
+            assertEquals(42, obj.getInteger());
+        }
+        // For the third case, check the regex pattern
+        if (obj.getCharacter().equals('c')) {
+            assertTrue(obj.getString().matches("[a-z]{5,8}@test\\.com"));
+        }
+    }
+
+    @ParameterizedTest(name = "[{index}] Test with JSON overrides - simple fields")
+    @MotherFactoryResource(args = {
+            @RandomArg(
+                    name = "Object with JSON",
+                    targetClass = AllArgsConstructorBasicObjectBasicTypes.class,
+                    jsonOverrides = """
+                            {
+                                "string": "json-value",
+                                "integer": 100,
+                                "bool": true
+                            }
+                            """
+            )
+    })
+    void testWithJsonOverrides(AllArgsConstructorBasicObjectBasicTypes obj) {
+        assertEquals("json-value", obj.getString());
+        assertEquals(100, obj.getInteger());
+        assertTrue(obj.isBool());
+    }
+
+    @ParameterizedTest(name = "[{index}] Test regex patterns")
+    @MotherFactoryResource(args = {
+            @RandomArg(
+                    name = "Phone Number Pattern",
+                    targetClass = AllArgsConstructorBasicObjectBasicTypes.class,
+                    overrides = {
+                            @OverrideField(field = "string", value = "\\d{3}-\\d{3}-\\d{4}", isRegex = true)
+                    }
+            ),
+            @RandomArg(
+                    name = "Email Pattern",
+                    targetClass = AllArgsConstructorBasicObjectBasicTypes.class,
+                    overrides = {
+                            @OverrideField(field = "string", value = "[a-z]{5,10}@(gmail|outlook).com", isRegex = true)
+                    }
+            )
+    })
+    void testRegexPatterns(AllArgsConstructorBasicObjectBasicTypes obj) {
+        assertNotNull(obj.getString());
+        // Verify the string matches some pattern
+        assertFalse(obj.getString().isEmpty());
+        // Check if it looks like phone or email
+        assertTrue(obj.getString().contains("-") || obj.getString().contains("@"));
+    }
+
+    @ParameterizedTest(name = "[{index}] Mixing overrides")
+    @MotherFactoryResource(args = {
+            @RandomArg(
+                    name = "Mixed Overrides",
+                    targetClass = AllArgsConstructorBasicObjectBasicTypes.class,
+                    overrides = {
+                            @OverrideField(field = "string", value = "from-annotation"),
+                            @OverrideField(field = "integer", value = "999", type = Overrider.OverriderType.OBJECT)
+                    },
+                    jsonOverrides = """
+                            {
+                                "bool": false
+                            }
+                            """
+            )
+    })
+    void testMixedOverrides(AllArgsConstructorBasicObjectBasicTypes obj) {
+        assertEquals("from-annotation", obj.getString());
+        assertEquals(999, obj.getInteger());
+        assertFalse(obj.isBool());
+    }
+
+    @ParameterizedTest(name = "[{index}] Test with nested object overrides")
+    @MotherFactoryResource(args = {
+            @RandomArg(
+                    name = "Nested Object Test",
+                    targetClass = AllArgsConstructorBasicObjectBasicTypes.class,
+                    overrides = {
+                            @OverrideField(field = "nestedObject.string", value = "nested-value"),
+                            @OverrideField(field = "nestedObject.integer", value = "200", type = Overrider.OverriderType.OBJECT)
+                    }
+            )
+    })
+    void testNestedObjectOverrides(AllArgsConstructorBasicObjectBasicTypes obj) {
+        assertNotNull(obj);
+        assertNotNull(obj.getNestedObject());
+        assertEquals("nested-value", obj.getNestedObject().getString());
+        assertEquals(200, obj.getNestedObject().getInteger());
+    }
+}
+

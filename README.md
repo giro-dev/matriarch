@@ -13,7 +13,10 @@ bringing you the chance to force values to be placed in defined fields.
 📊 **Named Test Cases** - Add descriptive names for better test reporting  
 🎲 **Multiple Strategies** - Use as builder, factory, or JUnit annotation  
 ⚡ **Lightweight** - No heavy dependencies, fast test execution  
-📚 **Well Documented** - Comprehensive guides and examples
+📚 **Well Documented** - Comprehensive guides and examples  
+🧩 **Custom Field Generators** - `.forField("field", Supplier<?>)` for per-field custom values  
+🧱 **Type-based Generators** - `.forType(Class<T>, Supplier<T>)` to affect all fields of a type  
+🧭 **Known Patterns** - Built-in defaults, YAML overrides, and JVM system properties support
 
 ## Quick Example
 
@@ -65,9 +68,6 @@ void testUser(User user) {
 }
 ```
 
-
-
-
 ### Set up
 Add the dependency to your project
 #### Maven
@@ -98,7 +98,7 @@ override.
 If you only want a random object of `SomeType`, it is as simple as:
 
 ```java
-var randomSomeType = Mother.forClass(SomeType.class).build;
+var randomSomeType = Mother.forClass(SomeType.class).build();
 ```
 If you need to define some specific fields for your use case, could be defines as follow:
 
@@ -107,17 +107,17 @@ var randomSomeType = Mother.forClass(SomeType.class)
         .forField("sStringValue", "my String Value")
         .forField("otherStringValue", "A-\\d{4}(-V\\d+)?", Overrider.OverriderType.REGEX)
         .forField("anObjectValue", new OtherObject())
-        .build;
+        .build();
 ```
 
-> 💡 **Note**: The method `.override()` is still available as an alias for `.forField()` for backward compatibility, but `.forField()` is the recommended method as it's more explicit about its purpose.
+> 💡 Note: `.override(...)` is kept as a legacy alias of `.forField(...)` for backward compatibility. Prefer `.forField(...)` for clarity.
 
 There is several ways to define your field values, a more detailed options are listed below:
 
 ```java
     import java.time.Instant;
 
-var claimCategorizedEvent = Mother.builder(PurchaseAggregate.class)
+var claimCategorizedEvent = Mother.forClass(PurchaseAggregate.class)
         /* 1.i */.forField("aggregate.user.valid", Overrider.with(techWarrantyFlag.toString()))
         /* 1.ii */.forField("aggregate.user.role", "STANDARD")
         /* 1.iii */.forField("aggregate.user.address", Overrider.with("C/Mississippi 56, 8B"))
@@ -130,7 +130,7 @@ var claimCategorizedEvent = Mother.builder(PurchaseAggregate.class)
         /* 5.i */.forField("aggregate.list[3].date", Instant.now())
         /* 5.ii */.forField("aggregate.map[thomas].date", Instant.now())
         .build();
- ```
+```
 
 there are two types of field value setters:
 
@@ -148,10 +148,11 @@ there are two types of field value setters:
    1. `.forField("aggregate.purchase.claimDate", Overrider.nullValue())`
    2. `.forField("aggregate.purchase.voucher", null)`
 5. You can Override a List element using `[<index>]` and Map value using `[<key>]`
-   1. by default the list size is random between 1 and 15. If you specify an index bigger than that, the list will be filled as this index (randomly in cases where no override definition exists)
-   2. Map objects are limited at the moment to a Map<Object, Object>, it will try to generate:
-     - A **key** with the `<key>` to the object defined as key 
-     - A **value** as defined.  !is not allowed to generate random values for Map or Collection (if you need it you have to pass them as a Overrider.object(<CollectionValue>))     
+   1. By default the list size is random between 1 and 15. If you specify an index bigger than that, the list will be filled as this index (randomly in cases where no override definition exists)
+   2. Map objects are limited at the moment to a Map<Object, Object>. It will try to generate:
+      - A key with the `<key>` to the object defined as key
+      - A value as defined.
+      - Note: It is not allowed to generate random values for Map or Collection automatically (if you need it you have to pass them as an `Overrider.object(<CollectionValue>)`).
 
 #### Custom Field Generators with forField
 
@@ -228,7 +229,7 @@ Mother.forClass(Invoice.class)
 1. `.forField(field, value)` - Explicit field value (also available as `.override()` for compatibility)
 2. `.forField(field, supplier)` - Custom field generator
 3. `.forType(class, supplier)` - Type-based generator
-4. Pattern matching (YAML/ENV/default)
+4. Pattern matching (YAML/System properties/default)
 5. Random generation
 
 #### Collection Size Configuration
@@ -279,7 +280,7 @@ Mother.forClass(Account.class)
     .forField("username", "testuser")
     .build();
 // password and securityToken will be null
-```     
+```
 
 ### As Annotation for Junit Parameterized Test
 Add a `@MotherFactoryResource` annotation to define test parameters with ease.
@@ -329,8 +330,8 @@ Generate random data matching regex patterns:
         overrides = {
             @OverrideField(
                 field = "email", 
-                value = "[a-z]{5,10}@(gmail|outlook).com",
-                isRegex = true  // NEW: Direct regex support
+                value = "[a-z]{5,10}@(gmail|outlook)\.com",
+                isRegex = true
             ),
             @OverrideField(
                 field = "phoneNumber",
@@ -410,9 +411,10 @@ void testMultipleCases(User user) {
 - `type`: Override type (`STRING`, `OBJECT`, `REGEX`, `NULL`)
 - `isRegex` (optional): If true, treats value as regex pattern (NEW!)
 
-> 📝 **Note**: In the annotation context, it's called `@OverrideField` for clarity in JUnit tests. In the builder API, use `.forField()` which is the recommended method (`.override()` is still available as an alias for backward compatibility).
+> 📝 Note: In the annotation context, it's called `@OverrideField` for clarity in JUnit tests. In the builder API, use `.forField()` which is the recommended method (`.override()` is still available as an alias for backward compatibility).
 
 > 📚 For more examples and advanced usage, see [PARAMETERIZED_TESTING_GUIDE.md](PARAMETERIZED_TESTING_GUIDE.md)
+
 ### Field Instance used as Factory.
 
 this way is not recommended, but it is possible to use the `Mother` as a field. it receives a Map<String, Overrider> with the coordinates
@@ -438,7 +440,37 @@ Matriarch supports pattern-based value generation from multiple sources, which a
 
 ### Pattern Sources (in order of precedence)
 
-#### 1. Custom YAML Patterns
+#### 1. JVM System Properties (highest priority)
+Define patterns via JVM properties using the prefix `matriarch.pattern.`. Format is either `{type}:{value}` or just `{value}` (defaults to `regex`).
+
+Examples:
+
+```bash
+# Regex type (explicit)
+java -Dmatriarch.pattern.email="regex:[a-z]{5,10}@(gmail|outlook)\\.com" \
+     -Dmatriarch.pattern.environment="list:DEV,TEST,PROD" \
+     -jar your-tests.jar
+
+# Or with Maven
+mvn -Dmatriarch.pattern.email="regex:[a-z]{5,10}@(gmail|outlook)\\.com" test
+```
+
+Tip (CI environments): you can map environment variables into JVM properties. For Maven Surefire you can do:
+
+```xml
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-surefire-plugin</artifactId>
+  <configuration>
+    <argLine>
+      -Dmatriarch.pattern.email=${env.MATRIARCH_PATTERN_EMAIL}
+      -Dmatriarch.pattern.apiKey=${env.MATRIARCH_PATTERN_API_KEY}
+    </argLine>
+  </configuration>
+</plugin>
+```
+
+#### 2. Custom YAML Patterns
 Create a `patterns.yaml` file in `src/test/resources` to define your own patterns:
 
 ```yaml
@@ -462,37 +494,10 @@ patterns:
 - `regex` - Generates a random string matching the regex pattern
 - `list` - Randomly selects one value from comma-separated list
 
-#### 2. Default Built-in Patterns
-Matriarch includes 12 standard patterns that work out of the box:
+#### 3. Default Built-in Patterns (lowest priority)
+Matriarch includes standard patterns that work out of the box (email, phoneNumber, id, firstName, lastName, status, priority, etc.).
 
-| Coordinate | Pattern | Example Output |
-|------------|---------|----------------|
-| `email` | `[a-z]{4,8}\.[a-z]{4,8}_[a-z]{4,8}@(gmail\|outlook).com` | `test.user_demo@gmail.com` |
-| `phoneNumber` | `\d{3}-\d{3}-\d{4}` | `555-123-4567` |
-| `username` | `[a-z]{5,10}` | `johndoe` |
-| `userId` | `USER_\d{6}` | `USER_123456` |
-| `id` | `\d{8}` | `12345678` |
-| ... | ... | ... |
-
-> 💡 **Tip**: Custom YAML patterns override default patterns for the same coordinate.
-
-#### 3. Environment Variable Patterns
-Set patterns dynamically using environment variables:
-
-```bash
-# Set a pattern via environment variable
-export MATRIARCH_PATTERN_API_KEY="API-[A-Z]{3}-\d{6}"
-export MATRIARCH_PATTERN_USER_EMAIL="test@mycompany.com"
-```
-
-Then use the coordinate in your tests:
-```java
-User user = Mother.forClass(User.class)
-    .forField("apiKey", "API_KEY")  // Will use env var pattern
-    .build();
-```
-
-> 🔒 **Use Case**: Environment variables are useful for sensitive data like API keys, database URLs, or environment-specific values in CI/CD pipelines.
+> 💡 Tip: Higher priority sources override lower ones when the same coordinate is defined.
 
 ### How Pattern Matching Works
 
@@ -513,21 +518,19 @@ Patterns are matched using **case-insensitive substring matching** on field coor
 
 When multiple patterns could match, they are applied in this order:
 1. **Explicit overrides** in your code (highest priority)
-2. **Custom YAML patterns** from `patterns.yaml`
-3. **Environment variable patterns**
+2. **JVM System properties** (`-Dmatriarch.pattern.*`)
+3. **Custom YAML patterns** from `patterns.yaml`
 4. **Default built-in patterns** (lowest priority)
 
 Example:
 ```java
-// If patterns.yaml has: email → "[a-z]+@custom.com"
-// And ENV has: MATRIARCH_PATTERN_EMAIL="env@email.com"
-// And default has: email → "[a-z]+@(gmail|outlook).com"
+// If system property is set: -Dmatriarch.pattern.email="regex:[a-z]+@custom.com"
+// And YAML has: email → "[a-z]+@company.com"
+// And default has: email → generic pattern
 
-// This will use the YAML pattern (highest priority after explicit field value)
 User user = Mother.forClass(User.class).build();
-// user.email → "test@custom.com"
+// user.email will follow the system property (highest)
 
-// This explicit field value takes precedence over all patterns
 User user2 = Mother.forClass(User.class)
     .forField("email", "explicit@override.com")
     .build();
@@ -548,6 +551,103 @@ Examples:
 - `(gmail|outlook|yahoo)` → generates either "gmail", "outlook", or "yahoo"
 - `\d{3}-\d{3}-\d{4}` → generates "555-123-4567", etc.
 
+## JUnit ParameterizedTest UX Tips
+
+- Use `@ParameterizedTest(name = "[{index}] {0}")` to make reports readable.
+- Prefer `@OverrideField(isRegex = true)` for patterns to keep values concise.
+- Group multiple cases using one `@MotherFactoryResource` to reduce boilerplate.
+- Keep overrides small and offload complex structures to `jsonOverrides`.
+
+## JUnit field/parameter injection
+
+You can generate instances directly into fields or parameters using the `@MotherConfig` annotation.
+
+**Note:** `@MotherConfig` automatically enables the JUnit extension, so you don't need `@ExtendWith`!
+
+### Basic Usage
+
+```java
+@MotherConfig  // This is all you need - no @ExtendWith required!
+class MyTest {
+  @Mother(overrides = {@OverrideField(field = "email", value = "fixed@example.com")})
+  User user;
+
+  @Test
+  void field_is_generated() {
+    assertNotNull(user);
+    assertEquals("fixed@example.com", user.getEmail());
+  }
+
+  @Test
+  void parameter_generated(@Mother User another) {
+    assertNotNull(another);
+  }
+}
+```
+
+### With Configuration
+
+```java
+@MotherConfig(
+    collectionMin = 2,
+    collectionMax = 10
+)
+class MyTest {
+  @Mother User user;  // Fresh instance before each test
+
+  @Test
+  void test1() { /* user ready to use */ }
+  
+  @Test
+  void test2() { /* fresh user for each test */ }
+}
+```
+
+### Configuration Options
+
+- `collectionMin` / `collectionMax`: Default collection sizes for generated Lists/Sets
+- `jsonOverridesWin`: If true, JSON overrides take precedence over array overrides (default: true)
+- `seed`: Reserved for future deterministic generation
+- `knownPatterns`: **Not yet implemented** - Use default patterns.yaml instead
+
+### Using Known Patterns
+
+Patterns are automatically loaded from `src/test/resources/patterns.yaml`. Add your patterns there:
+
+```yaml
+patterns:
+  - coordinate: "integer"
+    value: "666"
+    type: "string"
+  - coordinate: "email"
+    value: "[a-z]{5,10}@test\\.com"
+    type: "regex"
+```
+
+Pattern loading priority (higher priority overrides lower):
+1. **System Properties** (highest) - `-Dmatriarch.pattern.fieldName=value`
+2. **Standard Patterns** - Built-in defaults
+3. **YAML File** - `src/test/resources/patterns.yaml`
+
+### Important Notes
+
+- `.override()` remains as a legacy alias of `.forField()`; prefer `.forField()`.
+- Fields are populated **before each test** - you get a fresh instance every time
+- Parameter injection works with `@Test`, `@ParameterizedTest`, and other test methods
+- To use patterns, add them to `patterns.yaml` or use `-Dmatriarch.pattern.coordinate=value`
+
+## Next steps (roadmap ideas)
+
+Grounded in current functionality, here are safe, incremental improvements:
+
+- JUnit Field Injection: Add a `@Mother` annotation plus a Jupiter extension to auto-populate fields before each test (and as a `ParameterResolver`), reusing the same override/type mechanisms.
+- Deterministic Seeds: Optional `seed` attribute for builders/annotations to make test data reproducible.
+- Presets: Reusable, named override sets (e.g., `@MotherPreset("user-basic")`) to DRY up parameterized suites.
+- Pattern Reload/Config: Expose a simple API to reload patterns at runtime and configure precedence, useful in long-running test suites.
+- Bean Validation Awareness: Respect common annotations like `@NotNull`, `@Size`, `@Pattern` to generate constraint-compliant data.
+- Better Arrays/Records: Improve generation for record arrays and edge constructors to reduce nulls and warnings during object creation.
+- Performance & Diagnostics: Small logging toggle and metrics around generation time, plus clearer failure messages.
+
 ## Recent Improvements
 
 ### v0.5.1 (November 2025)
@@ -567,4 +667,3 @@ This library uses the following opensource projects:
  - https://github.com/FasterXML/jackson
 
 Note: Previously used datafaker for regex generation, but now includes a lightweight custom regex generator for better performance and reduced dependencies.
-

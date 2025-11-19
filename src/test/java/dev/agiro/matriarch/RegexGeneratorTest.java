@@ -67,5 +67,36 @@ class RegexGeneratorTest {
         assertTrue(result2.length() >= 2 && result2.length() <= 4);
         assertTrue(result2.matches("b{2,4}"));
     }
+
+    @Test
+    @DisplayName("Should generate word-like strings for \\w with quantifiers")
+    void testWordGeneration() {
+        // Test \w{5,10} generates a word-like string
+        String result1 = RegexGenerator.generate("\\w{3,5}");
+        assertNotNull(result1);
+        assertTrue(result1.length() >= 5 && result1.length() <= 10, "Generated: " + result1);
+        assertTrue(result1.matches("\\w{5,10}"), "Generated: " + result1);
+
+        // Test \w+ generates word-like string
+        String result2 = RegexGenerator.generate("\\w+");
+        assertNotNull(result2);
+        assertTrue(result2.length() > 0, "Generated: " + result2);
+        assertTrue(result2.matches("\\w+"), "Generated: " + result2);
+
+        // Test \w* can generate empty or word-like string
+        String result3 = RegexGenerator.generate("\\w*");
+        assertNotNull(result3);
+        assertTrue(result3.matches("\\w*"), "Generated: " + result3);
+    }
+
+    @Test
+    @DisplayName("Should generate varied characters for single \\w")
+    void testSingleWordChar() {
+        // Test single \w still generates single random char (not a full word)
+        String result = RegexGenerator.generate("\\w");
+        assertNotNull(result);
+        assertEquals(1, result.length(), "Generated: " + result);
+        assertTrue(result.matches("\\w"), "Generated: " + result);
+    }
 }
 

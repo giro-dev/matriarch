@@ -3,7 +3,7 @@ package dev.agiro.matriarch.generators;
 import dev.agiro.matriarch.domain.core.CircularDependencyDetector;
 import dev.agiro.matriarch.domain.core.ReflectionCache;
 import dev.agiro.matriarch.domain.model.*;
-import dev.agiro.matriarch.exception.MatriarchInstantiationException;
+import dev.agiro.matriarch.domain.exception.MatriarchInstantiationException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

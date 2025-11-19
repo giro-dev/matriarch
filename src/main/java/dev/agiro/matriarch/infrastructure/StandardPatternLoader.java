@@ -39,11 +39,7 @@ public class StandardPatternLoader implements PatternLoader {
         patterns.add(new Pattern("zipCode", "[0-9]{5}", "regex"));
         patterns.add(new Pattern("postalCode", "[0-9]{5}", "regex"));
 
-        // Status patterns
-        patterns.add(new Pattern("status", "ACTIVE,INACTIVE,PENDING,COMPLETED", "list"));
-        patterns.add(new Pattern("priority", "LOW,MEDIUM,HIGH,CRITICAL", "list"));
-
-        logger.log(Level.INFO, "Loaded {0} standard patterns", patterns.size());
+        logger.log(Level.FINE, "Loaded {0} standard patterns", patterns.size());
         return patterns;
     }
 
