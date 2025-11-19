@@ -6,7 +6,8 @@ layout: hextra-home
 
 
 {{< hextra/hero-container 
-image="image/header.svg"  
+image="image/main.svg"  
+imageAlt="Matriarch - Smart Test Data Generation for Java"
 imageTitle="title"
 imageWidth=800
 cols=1

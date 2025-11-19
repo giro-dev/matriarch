@@ -1,11 +1,12 @@
 ---
-title: "Examples"
+title: "Use Cases and Examples"
+description: "Real-world examples demonstrating common Matriarch usage patterns."
+icon: "document"
 date: 2025-11-15
 draft: false
 weight: 8
 ---
 
-# Examples
 
 Real-world examples demonstrating common Matriarch usage patterns.
 
