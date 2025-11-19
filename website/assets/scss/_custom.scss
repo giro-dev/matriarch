@@ -1,0 +1,65 @@
+/* Custom SCSS overrides for Matriarch documentation */
+
+/* Import Docsy defaults first */
+@import "../../themes/docsy/assets/scss/main.scss";
+
+/* Fix title being hidden under navbar */
+.td-main {
+  padding-top: 2rem !important;
+
+  > h1:first-child {
+    margin-top: 1.5rem !important;
+  }
+}
+
+.td-content {
+  padding-top: 1rem !important;
+
+  > h1:first-child {
+    margin-top: 1.5rem !important;
+  }
+
+  > .row:first-child {
+    margin-top: 1rem;
+  }
+}
+
+/* Cover page adjustments */
+.td-cover {
+  padding-top: 5rem !important;
+
+  &__heading {
+    padding-top: 2rem;
+  }
+}
+
+/* Main content area */
+main.main {
+  padding-top: 1rem;
+}
+
+/* Blog and docs layouts */
+article {
+  header h1 {
+    margin-top: 2rem !important;
+  }
+}
+
+/* Ensure all h1 elements have proper spacing */
+h1 {
+  &:first-of-type {
+    padding-top: 1rem;
+  }
+}
+
+/* Navigation spacing */
+.td-navbar + main,
+.td-navbar + .td-main {
+  margin-top: 0;
+}
+
+/* Remove body top padding if present */
+body {
+  padding-top: 0 !important;
+}
+

@@ -1,0 +1,54 @@
+<style>
+  /* Fix for Docsy theme - title being hidden under navbar */
+
+  /* Force main content to start below navbar with strong margin */
+  .td-default main,
+  .td-main,
+  main.td-main,
+  main {
+    margin-top: 90px !important;
+  }
+
+  /* Content area padding */
+  .td-content {
+    padding-top: 2rem !important;
+  }
+
+  /* First heading in content - reset margins */
+  .td-content h1:first-child,
+  .td-main h1:first-child,
+  main h1:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Cover pages need extra space */
+  .td-cover-block,
+  .td-cover {
+    padding-top: 140px !important;
+  }
+
+  /* Override any conflicting body padding */
+  body {
+    padding-top: 0 !important;
+  }
+
+  /* Ensure navbar is properly fixed */
+  .td-navbar {
+    position: fixed !important;
+    top: 0 !important;
+    width: 100% !important;
+    z-index: 1030 !important;
+  }
+
+  /* Container adjustment */
+  .container-fluid.td-outer {
+    padding-top: 0 !important;
+  }
+
+  /* Section pages */
+  section.row.td-box {
+    margin-top: 1rem !important;
+  }
+</style>
+

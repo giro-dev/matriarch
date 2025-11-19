@@ -1,0 +1,15 @@
+<script>
+  // Fix title visibility on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add padding to main content if needed
+    const main = document.querySelector('.td-main, .td-content, main');
+    if (main) {
+      const navbar = document.querySelector('.td-navbar, nav, header');
+      if (navbar) {
+        const navbarHeight = navbar.offsetHeight;
+        main.style.paddingTop = (navbarHeight + 20) + 'px';
+      }
+    }
+  });
+</script>
+

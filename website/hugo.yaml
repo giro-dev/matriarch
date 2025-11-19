@@ -1,0 +1,81 @@
+baseURL: "https://giro-dev.github.io/matriarch/"
+languageCode: "en-us"
+title: "Matriarch Documentation"
+
+# When building via workflow, can override with HUGO_BASEURL
+
+pagination:
+  pagerSize: 10
+
+enableInlineShortcodes: true
+
+
+params:
+  description: "ObjectMother library for flexible test data generation"
+  author: "Albert Giró Quer"
+  favicon: "image/icon.svg"
+  # Docsy theme customization
+  ui:
+    navbar_translucent_over_cover_disable: true
+
+
+  navbar:
+    displayTitle: false
+    displayLogo: true
+    logo:
+      path: image/icon.svg
+      dark: image/72.png
+      link: /
+      width: 40
+      height: 20
+
+menu:
+  main:
+    - name: Search
+      weight: 10
+      params:
+        type: search
+    - name: "About"
+      url: "/about/"
+      weight: 20
+    - name: "Docs"
+      url: "/docs/"
+      weight: 30
+    - name: "GitHub"
+      url: "https://github.com/giro-dev/matriarch"
+      params:
+        icon: github
+      weight: 90
+    - name: Theme Toggle
+      params:
+        type: theme-toggle
+        label: false # optional, default is false
+
+outputs:
+  home:
+    - "HTML"
+    - "RSS"
+    - "JSON"
+
+# Enable syntax highlighting
+markup:
+  highlight:
+    style: "monokai"
+    guessSyntax: true
+  goldmark:
+    renderer:
+      unsafe: true
+
+
+
+module:
+  # Uncomment the next line to build and serve using local docsy clone declared in the named Hugo workspace:
+  # workspace: docsy.work
+  hugoVersion:
+    extended: true
+    min: 0.146.0
+  imports:
+    - path: github.com/google/docsy
+      disable: true
+    - path: github.com/imfing/hextra
+      disable: false
