@@ -17,8 +17,14 @@ cols=1
 
 <div style="margin:50px"></div>
 
-  <div class="hx-mb-6">
+
+  <div class="vm-mb-6" style="margin:50px">
     {{< hextra/hero-button text="Get Started" link="docs/getting-started">}}
+    {{< hextra/hero-button text="Documentation" link="docs" style="secondary">}}
+
+  </div>
+
+  <div class="hx-mb-6" style="margin:50px">
   </div>
 <div style="margin:50px"></div>
 
