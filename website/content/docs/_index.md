@@ -5,8 +5,6 @@ draft: false
 weight: 1
 ---
 
-# Matriarch Documentation
-
 Welcome to the **Matriarch** documentation! Matriarch is a powerful ObjectMother library designed to simplify test data
 generation in Java applications.
 
@@ -72,7 +70,7 @@ List<User> users = Mother.forClass(User.class).buildList(10);
                 overrides = @OverrideField(field = "email", value = "[a-z]+@test.com", isRegex = true)
         )
 })
-void testUser(User user) {
+void testUser(User user, @Mother Company company) {
     assertTrue(user.getEmail().endsWith("@test.com"));
 }
 ```
