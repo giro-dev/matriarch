@@ -140,6 +140,7 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
                                                                                   overrideValues,
                                                                                   currentField.isEmpty() ? field.getName() : currentField + "." + field.getName(),
                                                                                   resolvedGenericTypeMapFromParent)));
+                    return; // Recovered via setter; do not log a severe failure.
                 } catch (Exception ex) {
                     log.finest(() -> "ObjectMother not able to set field %s in class %s nor reflection or the method %s. %s".formatted(
                             field.getName(),

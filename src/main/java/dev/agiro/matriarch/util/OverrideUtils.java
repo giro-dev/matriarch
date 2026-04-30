@@ -87,7 +87,9 @@ public class OverrideUtils {
         }
         if (node.isArray()) {
             for (int i = 0; i < node.size(); i++) {
-                String p = path + ".[" + i + "]";
+                // Use the same coordinate format the collection generators consume:
+                // "parent[i]" (no separating dot before the bracket).
+                String p = path + "[" + i + "]";
                 flattenJsonNodes(node.get(i), p, out);
             }
         }

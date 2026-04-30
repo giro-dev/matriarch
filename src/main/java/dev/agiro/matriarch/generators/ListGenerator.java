@@ -35,7 +35,7 @@ public class ListGenerator extends AbstractGenerator<List<?>> implements MultiGe
             }
             final Class<?> aClass = Class.forName(supplierInput.parametrizedType()[0].getTypeName());
             var generator = generators.get(ClazzGenerators.forClass(aClass));
-            Pattern pattern = Pattern.compile(supplierInput.overrideCoordinate() + "\\[(\\d*)]");
+            Pattern pattern = Pattern.compile(Pattern.quote(supplierInput.overrideCoordinate()) + "\\[(\\d*)]");
             Optional<Integer> overridedSize = supplierInput.overrideValues().keySet().stream()
                     .filter(s -> pattern.matcher(s).matches())
                     .map(s -> Integer.parseInt(pattern.matcher(s).replaceAll("$1")) + 1)
