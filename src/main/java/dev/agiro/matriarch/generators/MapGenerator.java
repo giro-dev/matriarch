@@ -20,7 +20,7 @@ public class MapGenerator extends AbstractGenerator<Map<?,?>> implements MultiGe
 
     @SuppressWarnings("unchecked")
     public MapGenerator(Map<ClazzGenerators, AbstractGenerator<?>> generators) {
-        super( (Class<Map<?,?>>) (Class<?>) List.class);
+        super( (Class<Map<?,?>>) (Class<?>) Map.class);
         this.generator = generators;
     }
 
@@ -41,7 +41,7 @@ public class MapGenerator extends AbstractGenerator<Map<?,?>> implements MultiGe
             final Class<?> valueClass = Class.forName(supplierInput.parametrizedType()[1].getTypeName());
             var valueGenerator = this.generator.get(ClazzGenerators.forClass(valueClass));
             final int      listSize      = new SecureRandom().nextInt(1, 15);
-            final var regexPattern = Pattern.compile(supplierInput.overrideCoordinate() + "\\[(.*)]");
+            final var regexPattern = Pattern.compile(Pattern.quote(supplierInput.overrideCoordinate()) + "\\[(.*)]");
             List<String> mapOverriders = supplierInput.overrideValues().keySet().stream()
                     .filter(overrider -> regexPattern.matcher(overrider).matches())
                     .toList();
