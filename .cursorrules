@@ -1,0 +1,32 @@
+# Matriarch - Cursor Rules
+
+## Project Overview
+Java library implementing the Object Mother pattern for test data generation. Published to Maven Central as dev.agiro:matriarch.
+
+## Tech Stack
+- Java 21 (no Lombok), Maven (./mvnw), JUnit 5
+- Dependencies: Jackson, SnakeYAML, Reflections
+
+## Project Structure
+- `src/main/java/dev/agiro/matriarch/domain/core/` - Core generation logic, reflection cache
+- `src/main/java/dev/agiro/matriarch/domain/model/` - Domain entities (Overrider, Definition, Coordinate)
+- `src/main/java/dev/agiro/matriarch/generators/` - Type-specific data generation strategies
+- `src/main/java/dev/agiro/matriarch/infrastructure/` - Pattern loading (YAML, System Properties)
+- `src/main/java/dev/agiro/matriarch/junit/` - JUnit 5 extensions and annotations
+- `src/main/java/dev/agiro/matriarch/suppliers/` - Smart data suppliers by category
+- `src/main/java/dev/agiro/matriarch/util/` - TypeReference and utilities
+
+## Conventions
+- No Lombok — this is a published library with no external annotation processors
+- Entry point: Mother.forClass(T.class) → fluent builder → .build()
+- forField() is the preferred API; override() is a legacy alias
+- Suppliers organized by domain: address, company, datetime, financial, internet, numeric, personal, text, util
+- Override precedence: forField value > forField supplier > forType supplier > pattern matching > random
+- Maintain backward compatibility for all public API changes
+- Keep dependency footprint minimal — do not add dependencies without careful consideration
+- Tests in object_samples/ contain varied POJOs (records, inheritance, generics, static factories)
+
+## Build Commands
+- Build + test: ./mvnw clean install
+- Tests only: ./mvnw test
+- Package: ./mvnw package

@@ -1,0 +1,33 @@
+---
+description: Rules for the Matriarch Object Mother library
+globs: src/**/*.java, pom.xml
+alwaysApply: true
+---
+
+# Matriarch Library Rules
+
+## Stack
+- Java 21, Maven, JUnit 5
+- No Lombok — this is a published library with no external annotation processors
+- Dependencies: Jackson, SnakeYAML, Reflections
+
+## Architecture
+- Entry point: Mother.forClass(T.class) → fluent builder → .build()
+- Core generation in domain/core/
+- Domain model in domain/model/ (Overrider, Definition, Coordinate, Pattern)
+- Suppliers in suppliers/ organized by category (address, company, datetime, etc.)
+- JUnit 5 integration in junit/annotations/
+
+## Conventions
+- forField() is the preferred API; override() is a legacy alias for backward compatibility
+- Suppliers are organized by domain category, each with a single responsibility
+- Override precedence: forField value > forField supplier > forType supplier > pattern matching > random
+- Known patterns: System Properties > YAML config > built-in defaults
+- Maintain backward compatibility for all public API changes
+- Keep dependency footprint minimal
+- Use Java records in tests but support generating any POJO type
+
+## Build
+- ./mvnw clean install (build + test)
+- ./mvnw test (tests only)
+- Published to Maven Central via Sonatype with GPG signing
