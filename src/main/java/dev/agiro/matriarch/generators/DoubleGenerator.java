@@ -2,9 +2,8 @@ package dev.agiro.matriarch.generators;
 
 
 
+import dev.agiro.matriarch.domain.core.GenerationContext;
 import dev.agiro.matriarch.domain.model.Definition;
-
-import java.security.SecureRandom;
 
 public class DoubleGenerator extends AbstractGenerator<Double> {
 
@@ -14,6 +13,6 @@ public class DoubleGenerator extends AbstractGenerator<Double> {
 
     @Override
     public Double generate(Definition supplierInput) {
-        return new SecureRandom().nextDouble();
+        return GenerationContext.getInstance().getRandom().nextDouble();
     }
 }

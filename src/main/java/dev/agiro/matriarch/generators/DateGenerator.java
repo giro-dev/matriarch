@@ -1,9 +1,9 @@
 package dev.agiro.matriarch.generators;
 
 
+import dev.agiro.matriarch.domain.core.GenerationContext;
 import dev.agiro.matriarch.domain.model.Definition;
 
-import java.security.SecureRandom;
 import java.util.Date;
 
 public class DateGenerator extends AbstractGenerator<Date> {
@@ -15,6 +15,6 @@ public class DateGenerator extends AbstractGenerator<Date> {
 
     @Override
     public Date generate(Definition supplierInput) {
-        return new Date(System.currentTimeMillis() - new SecureRandom().nextLong());
+        return new Date(System.currentTimeMillis() - Math.abs(GenerationContext.getInstance().getRandom().nextLong()));
     }
 }

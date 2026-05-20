@@ -2,11 +2,11 @@ package dev.agiro.matriarch.generators;
 
 
 
+import dev.agiro.matriarch.domain.core.GenerationContext;
 import dev.agiro.matriarch.domain.model.ClassDefinition;
 import dev.agiro.matriarch.domain.model.Definition;
 import dev.agiro.matriarch.domain.model.Overrider;
 
-import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -40,7 +40,7 @@ public class MapGenerator extends AbstractGenerator<Map<?,?>> implements MultiGe
             var keyGenerator = this.generator.get(ClazzGenerators.forClass(keyClass));
             final Class<?> valueClass = Class.forName(supplierInput.parametrizedType()[1].getTypeName());
             var valueGenerator = this.generator.get(ClazzGenerators.forClass(valueClass));
-            final int      listSize      = new SecureRandom().nextInt(1, 15);
+            final int      listSize      = GenerationContext.getInstance().randomCollectionSize();
             final var regexPattern = Pattern.compile(supplierInput.overrideCoordinate() + "\\[(.*)]");
             List<String> mapOverriders = supplierInput.overrideValues().keySet().stream()
                     .filter(overrider -> regexPattern.matcher(overrider).matches())

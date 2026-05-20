@@ -1,14 +1,17 @@
 package dev.agiro.matriarch.util;
-import java.security.SecureRandom;
+import dev.agiro.matriarch.domain.core.GenerationContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Supplier;
 /**
  * Simple regex-to-string generator that supports common regex patterns.
  * This is a lightweight alternative to datafaker's regexify method.
  */
 public class RegexGenerator {
-    private static final SecureRandom random = new SecureRandom();
+    private static Random random() {
+        return GenerationContext.getInstance().getRandom();
+    }
     /**
      * Generate a random string that matches the given regex pattern.
      * Supports:
@@ -36,7 +39,7 @@ public class RegexGenerator {
                     int targetMin = quantifier.min < 5 ? 5 : quantifier.min; // keep test hack
                     int targetMax = Math.max(targetMin, quantifier.max < targetMin ? targetMin : quantifier.max);
                     if (targetMax < targetMin) targetMax = targetMin;
-                    int desired = targetMin == targetMax ? targetMin : random.nextInt(targetMax - targetMin + 1) + targetMin;
+                    int desired = targetMin == targetMax ? targetMin : random().nextInt(targetMax - targetMin + 1) + targetMin;
                     StringBuilder wordBuilder = new StringBuilder();
                     while (wordBuilder.length() < desired) {
                         // Build from \w character class set
@@ -66,7 +69,7 @@ public class RegexGenerator {
                 Supplier<String> groupSupplier = () -> {
                     if (group.contains("|")) {
                         String[] alternatives = splitAlternation(group);
-                        return generate(alternatives[random.nextInt(alternatives.length)]);
+                        return generate(alternatives[random().nextInt(alternatives.length)]);
                     } else {
                         return generate(group);
                     }
@@ -79,7 +82,7 @@ public class RegexGenerator {
                 // We've already processed everything before the pipe
                 // Now randomly choose from what comes after
                 String[] parts = splitAlternation(regex.substring(i + 1));
-                result.append(generate(parts[random.nextInt(parts.length)]));
+                result.append(generate(parts[random().nextInt(parts.length)]));
                 break;
             } else if (isQuantifier(c)) {
                 // Quantifier without preceding element - skip
@@ -95,13 +98,13 @@ public class RegexGenerator {
     }
     private static String handleEscapedChar(char c) {
         return switch (c) {
-            case 'd' -> String.valueOf(random.nextInt(10));
+            case 'd' -> String.valueOf(random().nextInt(10));
             case 'w' -> generateFromCharClass("a-zA-Z0-9_");
             case 'W' -> generateFromCharClass("!@#$%^&*(){}[]<>?/\\|+-=,.;:~");
             case 's' -> {
                 // Random whitespace character
                 char[] ws = new char[]{' ', '\t', '\n', '\r'};
-                yield String.valueOf(ws[random.nextInt(ws.length)]);
+                yield String.valueOf(ws[random().nextInt(ws.length)]);
             }
             case 'S' -> generateFromCharClass("a-zA-Z0-9!@#$%^&*()_+-=,.;:{}[]<>");
             case 't' -> "\t";
@@ -131,7 +134,7 @@ public class RegexGenerator {
         if (chars.isEmpty()) {
             return "";
         }
-        return String.valueOf(chars.get(random.nextInt(chars.size())));
+        return String.valueOf(chars.get(random().nextInt(chars.size())));
     }
     private static int findMatchingBracket(String regex, int start) {
         int depth = 1;
@@ -171,13 +174,13 @@ public class RegexGenerator {
         }
         char c = regex.charAt(start);
         if (c == '*') {
-            int count = random.nextInt(20); // 0 to 10 for a bit more variety
+            int count = random().nextInt(20); // 0 to 10 for a bit more variety
             return new QuantifierInfo(count, 20, start + 1);
         } else if (c == '+') {
-            int count = random.nextInt(20) + 1; // 1 to 10
+            int count = random().nextInt(20) + 1; // 1 to 10
             return new QuantifierInfo(count, 20, start + 1);
         } else if (c == '?') {
-            int count = random.nextInt(2); // 0 or 1
+            int count = random().nextInt(2); // 0 or 1
             return new QuantifierInfo(count, count, start + 1);
         } else if (c == '{') {
             int end = regex.indexOf('}', start);
@@ -191,7 +194,7 @@ public class RegexGenerator {
                 int max = parts.length > 1 && !parts[1].trim().isEmpty() 
                     ? Integer.parseInt(parts[1].trim()) 
                     : min + 5;
-                int count = min + random.nextInt(Math.max(1, max - min + 1));
+                int count = min + random().nextInt(Math.max(1, max - min + 1));
                 return new QuantifierInfo(count, max, end + 1);
             } else {
                 int count = Integer.parseInt(quantifier.trim());

@@ -77,13 +77,13 @@ Add the dependency to your project
 <dependency>
     <groupId>dev.agiro</groupId>
     <artifactId>matriarch</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.1</version>
     <scope>test</scope>
 </dependency>
 ```
 #### Gradle 
 ```kotlin
-    testImplementation("dev.agiro:matriarch:0.1.0")
+    testImplementation("dev.agiro:matriarch:1.1.1")
 ```
 
 ### Usage

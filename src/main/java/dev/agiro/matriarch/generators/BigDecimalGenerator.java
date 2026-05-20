@@ -1,10 +1,10 @@
 package dev.agiro.matriarch.generators;
 
 
+import dev.agiro.matriarch.domain.core.GenerationContext;
 import dev.agiro.matriarch.domain.model.Definition;
 
 import java.math.BigDecimal;
-import java.security.SecureRandom;
 
 public class BigDecimalGenerator extends AbstractGenerator<BigDecimal> {
 
@@ -16,6 +16,6 @@ public class BigDecimalGenerator extends AbstractGenerator<BigDecimal> {
 
     @Override
     public BigDecimal generate(Definition supplierInput) {
-        return BigDecimal.valueOf(new SecureRandom().nextDouble());
+        return BigDecimal.valueOf(GenerationContext.getInstance().getRandom().nextDouble());
     }
 }
