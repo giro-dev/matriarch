@@ -26,7 +26,7 @@ public class ArrayGenerator extends AbstractGenerator<Object[]> implements Multi
     public Object[] generate(Definition supplierInput) {
             final Class<?> aClass = supplierInput.clazz().getComponentType();
             var generator = generators.get(ClazzGenerators.forClass(aClass));
-            Pattern pattern = Pattern.compile(supplierInput.overrideCoordinate() + "\\[(\\d*)]");
+            Pattern pattern = Pattern.compile(Pattern.quote(supplierInput.overrideCoordinate()) + "\\[(\\d*)]");
             Optional<Integer> overridedSize = supplierInput.overrideValues().keySet().stream()
                     .filter(s -> pattern.matcher(s).matches())
                     .map(s -> Integer.parseInt(pattern.matcher(s).replaceAll("$1")) + 1)

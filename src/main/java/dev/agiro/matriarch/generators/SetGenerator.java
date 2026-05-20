@@ -20,7 +20,7 @@ public class SetGenerator extends AbstractGenerator<Set<?>> implements MultiGene
 
     @SuppressWarnings("unchecked")
     public SetGenerator(Map<ClazzGenerators, AbstractGenerator<?>> generators) {
-        super( (Class<Set<?>>) (Class<?>) List.class);
+        super( (Class<Set<?>>) (Class<?>) Set.class);
         this.generators = generators;
     }
 
@@ -35,7 +35,7 @@ public class SetGenerator extends AbstractGenerator<Set<?>> implements MultiGene
             }
             final Class<?> aClass = Class.forName(supplierInput.parametrizedType()[0].getTypeName());
             var generator = generators.get(ClazzGenerators.forClass(aClass));
-            Pattern pattern = Pattern.compile(supplierInput.overrideCoordinate() + "\\[(\\d*)]");
+            Pattern pattern = Pattern.compile(Pattern.quote(supplierInput.overrideCoordinate()) + "\\[(\\d*)]");
             Optional<Integer> overridedSize = supplierInput.overrideValues().keySet().stream()
                     .filter(s -> pattern.matcher(s).matches())
                     .map(s -> Integer.parseInt(pattern.matcher(s).replaceAll("$1")) + 1)
