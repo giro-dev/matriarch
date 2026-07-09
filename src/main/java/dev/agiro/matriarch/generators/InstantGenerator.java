@@ -1,9 +1,9 @@
 package dev.agiro.matriarch.generators;
 
 
+import dev.agiro.matriarch.domain.core.GenerationContext;
 import dev.agiro.matriarch.domain.model.Definition;
 
-import java.security.SecureRandom;
 import java.time.Instant;
 
 public class InstantGenerator extends AbstractGenerator<Instant> {
@@ -14,7 +14,7 @@ public class InstantGenerator extends AbstractGenerator<Instant> {
 
     @Override
     public Instant generate(Definition supplierInput) {
-        return Instant.ofEpochMilli(new SecureRandom().nextLong() % Instant.now().toEpochMilli());
+        return Instant.ofEpochMilli(GenerationContext.getInstance().getRandom().nextLong() % Instant.now().toEpochMilli());
     }
 }
 

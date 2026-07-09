@@ -1,6 +1,7 @@
 package dev.agiro.matriarch.generators;
 
 import dev.agiro.matriarch.domain.core.CircularDependencyDetector;
+import dev.agiro.matriarch.domain.core.GenerationContext;
 import dev.agiro.matriarch.domain.core.ReflectionCache;
 import dev.agiro.matriarch.domain.model.*;
 import dev.agiro.matriarch.domain.exception.MatriarchInstantiationException;
@@ -38,15 +39,23 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
         final var overrideCoordinate = classDefinition.overrideCoordinate();
         final Class<?> clazz = classDefinition.clazz();
 
+        GenerationContext ctx = GenerationContext.getInstance();
+
         // Check for circular dependencies
         if (circularDetector.isCircular(clazz)) {
-            log.fine(() -> "Circular dependency detected for class " + clazz.getName() + " at coordinate " + overrideCoordinate);
-            return null; // Break the cycle by returning null
+            String msg = "Circular dependency detected for class " + clazz.getName() + " at coordinate " + overrideCoordinate;
+            if (ctx.isDebugMode()) log.info(msg);
+            else log.fine(() -> msg);
+            if (ctx.isStrictMode()) throw new MatriarchInstantiationException(msg);
+            return null;
         }
 
         if (circularDetector.isMaxDepthExceeded()) {
-            log.warning(() -> "Maximum nesting depth exceeded at coordinate " + overrideCoordinate);
-            return null; // Prevent stack overflow
+            String msg = "Maximum nesting depth exceeded at coordinate " + overrideCoordinate;
+            if (ctx.isDebugMode()) log.info(msg);
+            else log.warning(() -> msg);
+            if (ctx.isStrictMode()) throw new MatriarchInstantiationException(msg);
+            return null;
         }
 
         // Execute generation with circular dependency tracking
@@ -140,7 +149,7 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
                                                                                   overrideValues,
                                                                                   currentField.isEmpty() ? field.getName() : currentField + "." + field.getName(),
                                                                                   resolvedGenericTypeMapFromParent)));
-                    return; // Recovered via setter; do not log a severe failure.
+                    return;
                 } catch (Exception ex) {
                     log.finest(() -> "ObjectMother not able to set field %s in class %s nor reflection or the method %s. %s".formatted(
                             field.getName(),
@@ -149,10 +158,14 @@ public class GenericObjectGenerator extends AbstractGenerator<Object> implements
                             ex.getMessage()));
                 }
             }
-            log.severe(() -> "ObjectMother not able to set field %s in class %s with value %s".formatted(
-                    field.getName(),
-                    object.getClass().getName(),
-                    e.getMessage()));
+            GenerationContext ctx = GenerationContext.getInstance();
+            String msg = "ObjectMother not able to set field %s in class %s with value %s".formatted(
+                    field.getName(), object.getClass().getName(), e.getMessage());
+            if (ctx.isStrictMode()) {
+                throw new MatriarchInstantiationException(msg, e);
+            }
+            if (ctx.isDebugMode()) log.info(msg);
+            else log.severe(() -> msg);
         }
     }
 

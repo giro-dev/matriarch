@@ -2,10 +2,10 @@ package dev.agiro.matriarch.generators;
 
 
 
+import dev.agiro.matriarch.domain.core.GenerationContext;
 import dev.agiro.matriarch.domain.model.ClassDefinition;
 import dev.agiro.matriarch.domain.model.Definition;
 
-import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -31,7 +31,7 @@ public class ArrayGenerator extends AbstractGenerator<Object[]> implements Multi
                     .filter(s -> pattern.matcher(s).matches())
                     .map(s -> Integer.parseInt(pattern.matcher(s).replaceAll("$1")) + 1)
                     .max(Integer::compareTo);
-            final int      listSize      = overridedSize.orElse(new SecureRandom().nextInt(1, 15));
+            final int      listSize      = overridedSize.orElse(GenerationContext.getInstance().randomCollectionSize());
             return IntStream.range(0, listSize)
                     .mapToObj(i -> generator.apply(new ClassDefinition<>(aClass,
                                                                             supplierInput.overrideValues(),

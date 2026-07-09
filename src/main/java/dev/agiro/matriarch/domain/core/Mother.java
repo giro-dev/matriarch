@@ -6,6 +6,7 @@ import dev.agiro.matriarch.domain.model.TypeReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Supplier;
 
 public class Mother<M> {
@@ -66,6 +67,7 @@ public class Mother<M> {
         private void initializeStrategies() {
             strategies.add(new ExcludedFieldsStrategy());
             strategies.add(new TypeOverrideStrategy());
+            strategies.add(new ValidationAwareStrategy());
         }
 
         /**
@@ -182,7 +184,6 @@ public class Mother<M> {
         /**
          * Set the size range for generated collections (Lists, Sets).
          * Usage: .withCollectionSize(5, 10)
-         * Note: The configuration is stored, but currently not applied during object generation.
          */
         public Builder<R> withCollectionSize(int min, int max) {
             if (min < 0 || max < min) {
@@ -195,8 +196,7 @@ public class Mother<M> {
 
         /**
          * Set the size range for generated collections (Lists, Sets).
-         * Usage: .withCollectionSize(5, 10)
-         * Note: The configuration is stored, but currently not applied during object generation.
+         * Usage: .withCollectionSize(5)
          */
         public Builder<R> withCollectionSize(int size) {
             if (size < 0 ) {
@@ -208,19 +208,61 @@ public class Mother<M> {
         }
 
         /**
+         * Set a seed for deterministic, reproducible object generation.
+         * When a seed is set, all random values will be generated in a predictable sequence.
+         * Usage: .withSeed(42)
+         */
+        public Builder<R> withSeed(long seed) {
+            config.setSeed(seed);
+            return this;
+        }
+
+        /**
+         * Enable strict mode: generation errors will throw exceptions instead of
+         * silently returning null fields.
+         * Usage: .strict()
+         */
+        public Builder<R> strict() {
+            config.setStrictMode(true);
+            return this;
+        }
+
+        /**
+         * Enable debug mode: logs the full generation tree for diagnostics.
+         * Usage: .debug()
+         */
+        public Builder<R> debug() {
+            config.setDebugMode(true);
+            return this;
+        }
+
+        /**
          * Build the object with the configured overrides.
          */
         public R build() {
             // Apply all override strategies
             strategies.forEach(strategy -> strategy.applyOverrides(config, mother.clazz));
 
-            // If TypeReference was used, pass it to the generator for proper generic handling
-            if (typeReference != null) {
-                ObjectMotherGenerator generator = new ObjectMotherGenerator();
-                return generator.createObject(typeReference, config.getOverrides());
+            // Set up generation context for this build
+            GenerationContext ctx = GenerationContext.getInstance();
+            GenerationContext.Config.Builder ctxBuilder = GenerationContext.Config.builder()
+                    .collectionSizeMin(config.getCollectionSizeMin())
+                    .collectionSizeMax(config.getCollectionSizeMax())
+                    .strictMode(config.isStrictMode())
+                    .debugMode(config.isDebugMode());
+            if (config.getSeed() != null) {
+                ctxBuilder.random(new Random(config.getSeed()));
             }
+            ctx.set(ctxBuilder.build());
 
-            return mother.create(config.getOverrides());
+            try {
+                if (typeReference != null) {
+                    return mother.objectMotherGenerator.createObject(typeReference, config.getOverrides());
+                }
+                return mother.create(config.getOverrides());
+            } finally {
+                ctx.clear();
+            }
         }
 
         /**

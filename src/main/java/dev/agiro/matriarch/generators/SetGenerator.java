@@ -2,10 +2,10 @@ package dev.agiro.matriarch.generators;
 
 
 
+import dev.agiro.matriarch.domain.core.GenerationContext;
 import dev.agiro.matriarch.domain.model.ClassDefinition;
 import dev.agiro.matriarch.domain.model.Definition;
 
-import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,11 +28,9 @@ public class SetGenerator extends AbstractGenerator<Set<?>> implements MultiGene
     @Override
     public Set<?> generate(Definition supplierInput) {
         try {
-            // Check if parametrizedType is available and not null
             if (supplierInput.parametrizedType() == null ||
                 supplierInput.parametrizedType().length == 0 ||
                 supplierInput.parametrizedType()[0] == null) {
-                // Default to empty set if no type information available
                 return java.util.Collections.emptySet();
             }
             final Class<?> aClass = Class.forName(supplierInput.parametrizedType()[0].getTypeName());
@@ -42,7 +40,7 @@ public class SetGenerator extends AbstractGenerator<Set<?>> implements MultiGene
                     .filter(s -> pattern.matcher(s).matches())
                     .map(s -> Integer.parseInt(pattern.matcher(s).replaceAll("$1")) + 1)
                     .max(Integer::compareTo);
-            final int      listSize      = overridedSize.orElse(new SecureRandom().nextInt(1, 15));
+            final int listSize = overridedSize.orElse(GenerationContext.getInstance().randomCollectionSize());
             return IntStream.range(0, listSize)
                     .mapToObj(i -> generator.apply(new ClassDefinition<>(aClass,
                                                                             supplierInput.overrideValues(),

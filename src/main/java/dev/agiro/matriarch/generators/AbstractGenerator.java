@@ -3,13 +3,13 @@ package dev.agiro.matriarch.generators;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import dev.agiro.matriarch.domain.core.GenerationContext;
 import dev.agiro.matriarch.domain.model.Definition;
 import dev.agiro.matriarch.domain.model.PatternType;
 import dev.agiro.matriarch.infrastructure.CompositePatternRepository;
 import dev.agiro.matriarch.infrastructure.PatternRepository;
 import dev.agiro.matriarch.util.RegexGenerator;
 
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -34,7 +34,7 @@ public abstract class AbstractGenerator<T> implements Function<Definition, T> {
                             final List<String> list = Arrays.stream(pattern.getValue().split(","))
                                     .map(String::trim)
                                     .toList();
-                            patterns.put(pattern.getCoordinate(), () -> list.get(new SecureRandom().nextInt(list.size())));
+                            patterns.put(pattern.getCoordinate(), () -> list.get(GenerationContext.getInstance().getRandom().nextInt(list.size())));
                         }
 
                     }

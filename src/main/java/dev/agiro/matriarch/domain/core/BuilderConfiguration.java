@@ -19,6 +19,9 @@ public class BuilderConfiguration<R> {
     private final Set<String> excludedFields = new HashSet<>();
     private Integer collectionSizeMin = 1;
     private Integer collectionSizeMax = 15;
+    private Long seed = null;
+    private boolean strictMode = false;
+    private boolean debugMode = false;
 
     public Map<String, Overrider> getOverrides() {
         return overrides;
@@ -62,6 +65,30 @@ public class BuilderConfiguration<R> {
 
     public boolean hasOverride(String key) {
         return overrides.containsKey(key);
+    }
+
+    public Long getSeed() {
+        return seed;
+    }
+
+    public void setSeed(Long seed) {
+        this.seed = seed;
+    }
+
+    public boolean isStrictMode() {
+        return strictMode;
+    }
+
+    public void setStrictMode(boolean strictMode) {
+        this.strictMode = strictMode;
+    }
+
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
     }
 }
 
