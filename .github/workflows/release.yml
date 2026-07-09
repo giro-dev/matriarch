@@ -48,6 +48,6 @@ jobs:
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          mvn clean deploy --batch-mode \
+          ./mvnw clean deploy --batch-mode \
             -Dgpg.passphrase="$GPG_PASSPHRASE" \
             -Dgpg.keyname=$(gpg --list-secret-keys --keyid-format=short | grep sec | awk '{print $2}' | cut -d'/' -f2 | head -n1)
