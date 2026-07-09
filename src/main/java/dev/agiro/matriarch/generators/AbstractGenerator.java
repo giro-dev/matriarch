@@ -74,10 +74,16 @@ public abstract class AbstractGenerator<T> implements Function<Definition, T> {
                 }
             }
         }
-        return patterns.entrySet().stream()
-                .filter(entry -> input.overrideCoordinate().toLowerCase().contains(entry.getKey().toLowerCase()))
-                .map(pattern -> getClazz().cast(objectMapper.convertValue(pattern.getValue().get(), input.clazz())))
-                .findFirst();
+        for (var entry : patterns.entrySet()) {
+            if (input.overrideCoordinate().toLowerCase().contains(entry.getKey().toLowerCase())) {
+                try {
+                    return Optional.of(getClazz().cast(objectMapper.convertValue(entry.getValue().get(), input.clazz())));
+                } catch (Exception ignored) {
+                    // Pattern value cannot be coerced into the target type; continue searching.
+                }
+            }
+        }
+        return Optional.empty();
     };
 
     private final Class<T> fieldType;
