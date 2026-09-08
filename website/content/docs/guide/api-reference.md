@@ -5,7 +5,6 @@ draft: false
 weight: 9
 ---
 
-# API Reference
 
 Complete reference for all Matriarch APIs, classes, and annotations.
 
