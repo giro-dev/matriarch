@@ -5,8 +5,6 @@ draft: false
 weight: 5
 ---
 
-# JUnit Integration
-
 Matriarch provides seamless integration with JUnit 5, offering two powerful approaches for test data generation.
 
 ## Overview
