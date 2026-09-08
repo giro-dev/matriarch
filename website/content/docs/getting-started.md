@@ -1,11 +1,10 @@
 ---
-title: "Getting Started"
+title: "Getting Started with Matriarch"
 date: 2025-11-15
 draft: false
 weight: 2
 ---
 
-# Getting Started with Matriarch
 
 This guide will help you get up and running with Matriarch in minutes.
 
