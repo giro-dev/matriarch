@@ -1,11 +1,11 @@
 ---
-title: "Builder API"
+title: "Builder API Reference"
 date: 2025-11-15
 draft: false
 weight: 4
 ---
 
-# Builder API Reference
+
 
 The Builder API is the most flexible way to use Matriarch. This guide covers all available methods and their use cases.
 

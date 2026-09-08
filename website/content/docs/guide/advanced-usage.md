@@ -5,7 +5,6 @@ draft: false
 weight: 7
 ---
 
-# Advanced Usage
 
 This guide covers advanced scenarios, best practices, and techniques for getting the most out of Matriarch.
 

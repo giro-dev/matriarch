@@ -5,7 +5,6 @@ draft: false
 weight: 6
 ---
 
-# Pattern System
 
 Matriarch's pattern system allows you to define reusable value generation rules that are automatically applied when
 field coordinates match pattern coordinates.
