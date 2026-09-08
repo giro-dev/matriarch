@@ -5,8 +5,6 @@ draft: false
 weight: 10
 ---
 
-# Built-in Suppliers
-
 Matriarch includes **43 ready-to-use Supplier implementations** for generating realistic test data. These suppliers can
 be used with the builder API or JUnit annotations to create domain-specific test objects with minimal code.
 
